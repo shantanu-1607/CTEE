@@ -1,0 +1,27 @@
+{
+  "status": "passed",
+  "physical_groups": 700,
+  "records": 31050,
+  "splits": {
+    "calibration": {
+      "groups": 70,
+      "records": 2700
+    },
+    "test": {
+      "groups": 105,
+      "records": 8100
+    },
+    "train": {
+      "groups": 420,
+      "records": 16200
+    },
+    "validation": {
+      "groups": 105,
+      "records": 4050
+    }
+  },
+  "group_overlap": 0,
+  "feature_count": 93,
+  "test_used_for_training": false,
+  "unsupported_pairs": 0
+}

@@ -1,0 +1,9 @@
+{
+  "split": "calibration",
+  "physical_groups": 70,
+  "episodes": 180,
+  "reference_condition": "20 dB white noise, the lower trained noise level",
+  "rule": "1st percentile of minimum measured channel/probe SNR minus a 3 dB margin",
+  "threshold_db": 16.969659508873495,
+  "does_not_guarantee_unknown_domain_detection": true
+}

@@ -1,0 +1,15 @@
+{
+  "feature_plus_model_ms": {
+    "p50": 0.8197500137612224,
+    "p95": 0.8375208271900192
+  },
+  "model_ms": {
+    "p50": 0.06677099736407399,
+    "p95": 0.07289614877663553
+  },
+  "n": 100,
+  "device": "local CPU",
+  "includes_acquisition": false,
+  "includes_UI": false,
+  "model_bytes": 68793
+}
