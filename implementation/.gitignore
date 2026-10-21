@@ -1,4 +1,4 @@
-.venv/
+.venv*/
 __pycache__/
 .pytest_cache/
 data/
@@ -6,3 +6,4 @@ artifacts/
 reports/figures/
 *.pyc
 
+runs/

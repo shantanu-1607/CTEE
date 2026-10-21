@@ -3,7 +3,11 @@ name = "ctee-loadlab"
 version = "0.1.0"
 description = "Reproducible dual-head electrical load classification research prototype"
 requires-python = ">=3.12,<3.14"
-dependencies = ["numpy>=1.26,<3", "scipy>=1.12,<2", "scikit-learn>=1.4,<2", "torch>=2.6,<3", "pandas>=2.2,<3", "streamlit>=1.40,<2", "matplotlib>=3.8,<4", "plotly>=5.20,<7", "joblib>=1.3"]
+dependencies = ["numpy>=1.26,<3", "pandas>=2.2,<3", "streamlit>=1.40,<2", "matplotlib>=3.8,<4", "plotly>=5.20,<7", "threadpoolctl>=3.5,<4"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8,<10"]
+
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
