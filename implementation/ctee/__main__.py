@@ -20,7 +20,11 @@ def main():
             from .data import generate
             generate(a.root,a.configurations or cfg['configurations_per_topology'],a.seed if a.seed is not None else cfg['data_seed'])
         if a.phase in ['train','all']:
-            from .train import fit;fit(a.root,a.epochs,a.config)
+            if cfg.get('pipeline')=='quality_gated':
+                from .research import train_research
+                train_research(a.root,cfg,a.config,a.epochs)
+            else:
+                from .train import fit;fit(a.root,a.epochs,a.config)
         if a.phase in ['evaluate','all']:
             from .evaluate import evaluate;evaluate(a.root)
         if a.phase in ['confirm','all']:
