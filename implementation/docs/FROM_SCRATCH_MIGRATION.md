@@ -1,62 +1,36 @@
-# From-scratch migration: checkpoint 1
+# From-scratch migration — completed NumPy pipeline
 
-**Requirement:** the model and its learning algorithms must be implemented explicitly. NumPy is allowed for numerical calculations. Git commits and pushes are performed by the project owner, without assistant co-author attribution.
+Requirement: NumPy is allowed; the learning algorithm must be inspectable and adjustable. The current executable path contains no prebuilt classifier, automatic differentiation, optimizer, signal-processing solver or library statistical test. Plotting, CSV and dashboard tools are auxiliary dependencies.
 
-## What is implemented in this checkpoint
+## Explicit algorithms
 
-`ctee/scratch/` contains a standalone shared neural network with a three-class behaviour head and a seven-class composition head. Both tasks update the same hidden layers. This package imports only NumPy and standard Python; it does not use PyTorch, TensorFlow, scikit-learn, SciPy, an automatic-differentiation engine, or a prebuilt optimizer.
-
-Implemented explicitly:
-
-- Dense-layer forward calculations and shared-encoder backpropagation.
-- ReLU, leaky ReLU, and tanh activations and derivatives.
-- He/Xavier initialisation and inverted dropout, disabled during inference.
-- Stable softmax and weighted cross-entropy with label smoothing and per-head label masks.
-- An optional Huber slope-consistency loss with its softmax derivative.
-- Additive measured-evidence priors as optional input logits; priors must come from available measurements, not hidden labels.
-- Adam moment updates, bias correction, epsilon, decoupled weight decay, and global gradient clipping.
-- SGD, momentum, and optional Nesterov updates.
-- Training-only mean/scale fitting, mini-batches, constant/cosine learning rates, validation-based early stopping, and best-weight restoration.
-- Safe numerical-array checkpoints using NPZ and JSON metadata with `allow_pickle=False`.
-
-This is an inference checkpoint format. Resuming the exact optimizer/RNG state is not implemented in this batch.
-
-## Parameters we can now experiment with
-
-| Area | Exposed controls |
+| Area | Implementation |
 |---|---|
-| Encoder | Number and width of hidden layers, activation, leaky slope, initialisation, dropout, numeric precision |
-| Inputs | Scaling floor and normalised-input clipping |
-| Objective | Behaviour/composition weights, class weights, label smoothing, L2 coefficient, slope-consistency weight and Huber delta |
-| Evidence | Additive prior strength; caller supplies only measured evidence |
-| Adam | Learning rate, beta1, beta2, epsilon, decoupled weight decay, clipping norm |
-| SGD | Learning rate, momentum, Nesterov, decoupled weight decay, clipping norm |
-| Training | Batch size, epochs, patience, minimum improvement, random seed, learning-rate schedule |
+| Network | Shared arbitrary-width dense layers; 3/7 heads; manual forward pass and analytical backpropagation |
+| Objective | Stable softmax/CE, task masks/weights, class weights, smoothing, optional L2, measured-slope Huber consistency |
+| Regularization | He/Xavier initialization; inverted dropout; train-only standardization and input clipping |
+| Optimizers | Adam moments/bias correction/decoupled decay; SGD/momentum/Nesterov; global gradient clipping |
+| Training | Seeded mini-batches; constant/cosine schedules; validation-loss early stopping and restored best weights |
+| Spectra | Explicit radix-2 Cooley–Tukey butterflies; Hann window; direct harmonic phasor fitting |
+| Fits | Reorthogonalized modified Gram–Schmidt QR; triangular back substitution; exhaustive small active-set nonnegative fit; centered slope regression |
+| Dynamics | Explicit 2×2 implicit trapezoidal integration for RLC; first-order-hold recurrences for RL/RC; recursive coloured noise |
+| Calibration | Grid-bracket/golden-section temperature minimization; confidence threshold search by probe budget; SNR gate |
+| Evaluation | Confusion/F1, NLL/Brier/ECE, tie-aware rank AUC, Brier skill, continuous errors, group bootstrap/permutation |
+| Statistics | Repeated-measures ANOVA with GG correction, Friedman tie correction, exact small-panel Wilcoxon and Holm adjustment; beta/gamma tails |
+| Storage | NPZ arrays and JSON metadata with `allow_pickle=False`; no serialized Python estimator |
 
-L2 changes the objective gradient. Decoupled weight decay changes the optimizer update. They are separate configurable controls; both default model-objective L2 and evidence/physics terms are zero in this standalone core. Decay applies to weight matrices, not biases.
+The distribution-tail representations are documented in [NIST DLMF §8.17](https://dlmf.nist.gov/8.17) and [§8.9](https://dlmf.nist.gov/8.9). The tests check independent closed forms rather than using SciPy as an oracle. FFT tests compare with the direct DFT equation. Neural derivative tests use centered finite differences for every trainable parameter, including masks, smoothing, priors, dropout and consistency terms.
 
-## Verification
+## Verification and artifacts
 
-Run from `implementation/`:
+The clean `.venv_numpy/` environment contains none of torch, scipy, sklearn or joblib. All 64 tests pass there. The static restriction test scans every core source file, not only the standalone network. Full results, configuration hashes, seeds and scope are in `RESULTS_NUMPY.md`. Runtime artifacts are isolated in `runs/numpy_v1/`.
 
-```sh
-.venv/bin/python -m pytest tests/test_scratch.py -q
-```
+The checkpoint saves inference parameters/scaling, feature names, class order, architecture and training metadata. It does not preserve optimizer/RNG state for exact training resumption. The training budget is short enough to rerun experiments from the recorded seed/configuration.
 
-The tests check every trainable parameter's derivative using centred finite differences, including weighted/smoothed masked losses and physics consistency. They also verify dropout gradients with a fixed random mask, that the two heads' encoder gradients add, hand-calculated optimizer steps, gradient clipping, checkpoint equivalence, early-stop restoration, and learning both tasks on a small numerical sanity dataset. That sanity dataset is not an electrical-load benchmark and its score must not be reported as project accuracy.
+## Scope changes from checkpoint 1 and the initial plan
 
-## What is still library-based
+The old PyTorch/scikit-learn training, SciPy solver/NNLS/filter and library metrics are removed from the current executable path. The old random-forest comparator is retired; comparisons use manually trained baselines, a feature ablation, physics-enhanced models and analytical electrical rules. Separate single-task models, five-seed studies, AVME/Hilbert reproduction, parameter-search automation and independent ngspice/hardware validation are not implemented and are not claimed as completed.
 
-The old `ctee/model.py`, `ctee/train.py`, `ctee/metrics.py`, `ctee/evaluate.py`, and dashboard still run the earlier PyTorch/scikit-learn pipeline. The existing 100% clean and 96.3% noisy benchmark scores belong to that older implementation. They are **not** scores for this new from-scratch network.
+The normal workflow does not load the legacy framework checkpoints or their published metrics. Historical files remain available for provenance. Current scores are new measurements of the NumPy pipeline. Some numerical routines intentionally target this small problem (three-component fits, exact signed-rank enumeration for at most twenty blocks); they are not general-purpose replacements for mature numerical libraries.
 
-The signal-generation and feature modules still use SciPy routines for the startup solver, filtering, and constrained fitting, and NumPy high-level numerical routines for signal fitting. These need a separate decision/migration if the professor's restriction also covers signal-processing solvers. Plotting/UI/file tools do not implement the classifier, but their permitted use should be documented for the final submission. The current project as a whole is therefore **not yet a fully migrated from-scratch submission**.
-
-## Next small batch, after this checkpoint is committed
-
-1. Connect this core to the group-separated electrical dataset with explicit evidence masks.
-2. Provide editable experiment configurations and a manual classification-metric implementation.
-3. Train new baseline/enhanced models and record their own validation results in a separate location.
-4. Migrate calibration, inference, and the dashboard after verifying parity and correctness.
-5. Re-run the frozen comparisons on genuinely held-out data. Do not tune against previously published test results and call them a new blind test.
-
-Each batch stops with a concise change/test summary and commit/push commands. Model quality and novelty must be demonstrated experimentally; neither is guaranteed by implementing the arithmetic manually.
+Scientific novelty is supported only to the extent shown by the ablations and acquisition experiments. A manual neural network alone is not novel; a globally best classifier and a particular grade are not established.
