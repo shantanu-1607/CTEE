@@ -133,6 +133,7 @@ def fit(training_data, validation_data, config):
             raise ValueError("Physics training requires measured slope targets")
     model = TwoHeadMLP(config.network)
     model.fit_scaler(training_data.x)
+    initial_params = copy.deepcopy(model.params)
     common = dict(learning_rate=config.learning_rate, weight_decay=config.weight_decay, clip_norm=config.clip_norm)
     optimizer = (Adam(model.params, beta1=config.beta1, beta2=config.beta2, epsilon=config.epsilon, **common)
                  if config.optimizer == "adam" else SGD(model.params, momentum=config.momentum, nesterov=config.nesterov, **common))
@@ -148,19 +149,24 @@ def fit(training_data, validation_data, config):
             optimizer.learning_rate = config.learning_rate * (0.01 + 0.99 * (1 + math.cos(math.pi * fraction)) / 2)
         order = rng.permutation(len(training_data.x))
         total = 0.0
+        gradient_norms = []
+        epoch_start = copy.deepcopy(model.params)
         for start in range(0, len(order), config.batch_size):
             batch = training_data.subset(order[start:start + config.batch_size])
             details, grads = _loss(model, batch, config, True)
             if not np.isfinite(details["loss"]):
                 raise ValueError("Non-finite training loss")
-            optimizer.step(grads)
+            update = optimizer.step(grads)
+            gradient_norms.append(update["unclipped_gradient_norm"])
             total += details["loss"] * len(batch.x)
         validation, _ = _loss(model, validation_data, config, False)
         loss = validation["loss"]
         if not np.isfinite(loss):
             raise ValueError("Non-finite validation loss")
         history.append({"epoch": epoch + 1, "training_loss": total / len(training_data.x),
-                        "validation_loss": loss, "learning_rate": optimizer.learning_rate})
+                        "validation_loss": loss, "learning_rate": optimizer.learning_rate,
+                        "mean_gradient_norm": float(np.mean(gradient_norms)),
+                        "parameter_update_l2": float(np.sqrt(sum(np.sum((model.params[k]-v)**2) for k,v in epoch_start.items())))})
         if loss < best - config.min_delta:
             best = loss
             best_params = copy.deepcopy(model.params)
@@ -172,4 +178,9 @@ def fit(training_data, validation_data, config):
             break
     model.params = best_params
     return model, {"history": history, "best_epoch": best_epoch, "best_validation_loss": best,
-                   "optimizer_steps": optimizer.steps, "selection": "validation loss only"}
+                   "optimizer_steps": optimizer.steps, "selection": "validation loss only",
+                   "parameter_learning": {k:{"shape":list(v.shape), "count":int(v.size),
+                       "initial_l2":float(np.sqrt(np.sum(initial_params[k]**2))),
+                       "learned_l2":float(np.sqrt(np.sum(v**2))),
+                       "change_l2":float(np.sqrt(np.sum((v-initial_params[k])**2))),
+                       "changed_values":int(np.sum(abs(v-initial_params[k])>1e-12))} for k,v in model.params.items()}}

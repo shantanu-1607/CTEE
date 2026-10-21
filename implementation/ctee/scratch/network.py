@@ -21,6 +21,8 @@ class NetworkConfig:
     input_clip: float = 15.0
     scale_floor: float = 0.01
     prior_strength: float = 0.0
+    learned_physics_gate: bool = False
+    gate_feature_indices: tuple = ()
     dtype: str = "float64"
     seed: int = 11
 
@@ -40,6 +42,13 @@ class NetworkConfig:
             raise ValueError("dropout and negative_slope must be in [0, 1)")
         if self.input_clip <= 0 or self.scale_floor <= 0 or self.prior_strength < 0:
             raise ValueError("Invalid clipping, scaling, or prior strength")
+        if not isinstance(self.learned_physics_gate, bool):
+            raise ValueError("learned_physics_gate must be boolean")
+        if self.learned_physics_gate and self.prior_strength <= 0:
+            raise ValueError("A learned physics gate requires a positive maximum prior strength")
+        if len(set(self.gate_feature_indices)) != len(self.gate_feature_indices) or any(
+                not isinstance(i, int) or not 0 <= i < self.input_dim for i in self.gate_feature_indices):
+            raise ValueError("Gate feature indices must be unique input indices")
         if self.dtype not in {"float32", "float64"}:
             raise ValueError("dtype must be float32 or float64")
 
@@ -146,6 +155,11 @@ class TwoHeadMLP:
         for name, classes in [("behaviour", 3), ("composition", 7)]:
             self.params[f"W_{name}"] = (self.rng.standard_normal((dimensions[-1], classes)) / np.sqrt(dimensions[-1])).astype(config.dtype)
             self.params[f"b_{name}"] = np.zeros(classes, dtype=config.dtype)
+        if config.learned_physics_gate:
+            gate_width = len(config.gate_feature_indices) or config.input_dim
+            for head in ("behaviour", "composition"):
+                self.params[f"W_gate_{head}"] = np.zeros((gate_width, 1), dtype=config.dtype)
+                self.params[f"b_gate_{head}"] = np.zeros(1, dtype=config.dtype)
         self.mean = np.zeros(config.input_dim, dtype=config.dtype)
         self.scale = np.ones(config.input_dim, dtype=config.dtype)
 
@@ -175,6 +189,8 @@ class TwoHeadMLP:
 
     def _forward(self, x, training, priors):
         a = np.clip((self._inputs(x) - self.mean) / self.scale, -self.config.input_clip, self.config.input_clip)
+        gate_input = a[:, self.config.gate_feature_indices] if self.config.gate_feature_indices else a
+        gates = {}
         layers = []
         for i in range(len(self.config.hidden_widths)):
             z = a @ self.params[f"W{i}"] + self.params[f"b{i}"]
@@ -185,6 +201,8 @@ class TwoHeadMLP:
             layers.append((a, z, drop))
             a = self._activation(z) * drop
         logits = {head: a @ self.params[f"W_{head}"] + self.params[f"b_{head}"] for head in ("behaviour", "composition")}
+        if self.config.learned_physics_gate and priors is None:
+            raise ValueError("Learned physics gates require measured prior logits")
         if priors is not None:
             if set(priors) != set(logits):
                 raise ValueError("Provide behaviour and composition prior logits together")
@@ -192,12 +210,26 @@ class TwoHeadMLP:
                 p = np.asarray(priors[head])
                 if p.shape != logits[head].shape or not np.isfinite(p).all():
                     raise ValueError("Prior logits must match each head and be finite")
-                logits[head] = logits[head] + self.config.prior_strength * p
-        return logits, (layers, a)
+                gate = np.ones((len(a), 1))
+                if self.config.learned_physics_gate:
+                    q = gate_input @ self.params[f"W_gate_{head}"] + self.params[f"b_gate_{head}"]
+                    # Stable sigmoid, with no clipped derivative mismatch.
+                    gate = np.exp(-np.logaddexp(0., -q))
+                gates[head] = gate
+                logits[head] = logits[head] + self.config.prior_strength * gate * p
+        return logits, (layers, a, gate_input, gates)
 
     def forward(self, x, priors=None):
         """Deterministic inference: dropout is disabled and no state is updated."""
         return self._forward(x, False, priors)[0]
+
+    def physics_gate_values(self, x):
+        """Learned evidence trust in [0,1], independent of class labels and priors."""
+        a = np.clip((self._inputs(x) - self.mean) / self.scale, -self.config.input_clip, self.config.input_clip)
+        a = a[:, self.config.gate_feature_indices] if self.config.gate_feature_indices else a
+        return {head: (np.exp(-np.logaddexp(0., -(a @ self.params[f"W_gate_{head}"] + self.params[f"b_gate_{head}"]))).ravel()
+                       if self.config.learned_physics_gate else np.ones(len(a)))
+                for head in ("behaviour", "composition")}
 
     def predict_proba(self, x, priors=None):
         return {name: softmax(z) for name, z in self.forward(x, priors).items()}
@@ -210,7 +242,7 @@ class TwoHeadMLP:
         settings = [behaviour_weight, composition_weight, l2, physics_weight]
         if not np.isfinite(settings).all() or min(settings) < 0 or behaviour_weight + composition_weight <= 0:
             raise ValueError("Loss weights must be finite and nonnegative, with a supervised task enabled")
-        logits, (layers, hidden) = self._forward(x, training, priors)
+        logits, (layers, hidden, gate_input, gates) = self._forward(x, training, priors)
         lb, db = cross_entropy(logits["behaviour"], yb, behaviour_mask, smoothing, behaviour_class_weights)
         lc, dc = cross_entropy(logits["composition"], yc, composition_mask, smoothing, composition_class_weights)
         db *= behaviour_weight
@@ -230,6 +262,11 @@ class TwoHeadMLP:
             grads[f"b_{head}"] = dlogits.sum(axis=0)
             # Both tasks contribute to the same encoder gradient.
             d_hidden += dlogits @ self.params[f"W_{head}"].T
+            if self.config.learned_physics_gate:
+                dgate = self.config.prior_strength * np.sum(dlogits * priors[head], axis=1, keepdims=True)
+                dq = dgate * gates[head] * (1 - gates[head])
+                grads[f"W_gate_{head}"] = gate_input.T @ dq
+                grads[f"b_gate_{head}"] = dq.sum(axis=0)
         for i in reversed(range(len(layers))):
             previous, z, drop = layers[i]
             dz = d_hidden * drop * self._activation_derivative(z)
@@ -260,6 +297,7 @@ class TwoHeadMLP:
                 raise ValueError("Unrecognised scratch checkpoint format")
             config = metadata["config"]
             config["hidden_widths"] = tuple(config["hidden_widths"])
+            config["gate_feature_indices"] = tuple(config.get("gate_feature_indices", ()))
             model = cls(NetworkConfig(**config))
             if set(saved.files) != set(model.params) | {"mean", "scale", "metadata"}:
                 raise ValueError("Checkpoint fields do not match this architecture")
