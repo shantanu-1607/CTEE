@@ -23,7 +23,7 @@ def run(root):
     assert maximum_control_error<.001
     result={'status':'passed','supported_pairs_tested':len(checks),'maximum_slope_error':maximum_slope_error,
             'maximum_relative_regulation_error':maximum_control_error,'measurements':checks,
-            'independent_ngspice_check':'not performed; analytical and SciPy ODE checks only',
+            'independent_ngspice_check':'not performed; analytical and manual state-equation checks only',
             'scope':'ideal controlled-source simulation; no hardware validation'}
     save_json(Path(root)/'reports/phase1_physics_audit.json',result)
     print(result)

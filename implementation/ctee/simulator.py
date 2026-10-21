@@ -7,7 +7,6 @@ This is a behavioural AC emulator, not a switched-converter hardware model.
 """
 from dataclasses import dataclass, asdict
 import numpy as np
-from scipy import signal
 
 BEHAVIOURS = ("CC", "CP", "CZ")
 COMPOSITIONS = ("R", "L", "C", "RL", "RC", "LC", "RLC")
@@ -98,7 +97,7 @@ def corrupt(wave, rng, snr_db=None, condition="nominal"):
     if snr_db is not None:
         noise=rng.standard_normal(out.shape)
         if condition=="coloured":
-            noise=signal.lfilter([1.],[1.,-.65],noise,axis=-1)
+            for t in range(1,noise.shape[-1]):noise[:,t]+=.65*noise[:,t-1]
         noise /= np.maximum(np.sqrt(np.mean(noise**2,axis=1,keepdims=True)),1e-12)
         sigma = np.sqrt(np.mean(wave.astype(float)**2,axis=1,keepdims=True))*10**(-snr_db/20)
         out += noise*sigma
@@ -119,10 +118,30 @@ def transient(circuit,duration=.3,sample_rate=10000):
     v=np.sin(2*np.pi*50*t)*(1-np.exp(-t/.01))
     r=circuit.resistance+circuit.parasitic_resistance
     l,c=circuit.inductance,circuit.capacitance
-    if l and c: system=([c,0],[l*c,r*c,1])
-    elif l: system=([1],[l,r])
-    elif c: system=([c,0],[r*c,1])
-    else: return t,v,v/r
-    _,i,_=signal.lsim(system,U=v,T=t)
+    if not l and not c:return t,v,v/r
+    dt=1/sample_rate;i=np.zeros(len(t))
+    if l and c:
+        # Implicit trapezoidal integration of [current, capacitor voltage].
+        # Invert the 2x2 system explicitly; no ready-made ODE solver.
+        m00=1+dt*r/(2*l);m01=dt/(2*l);m10=-dt/(2*c)
+        determinant=m00-m01*m10
+        inverse=np.array([[1.,-m01],[-m10,m00]])/determinant
+        transition=inverse@np.array([[1-dt*r/(2*l),-dt/(2*l)],[dt/(2*c),1.]])
+        drive=inverse@np.array([dt/(2*l),0.])
+        f00,f01,f10,f11=transition.ravel();g0,g1=drive;current=capacitor=0.
+        for k in range(1,len(t)):
+            source=v[k-1]+v[k]
+            new_current=f00*current+f01*capacitor+g0*source
+            capacitor=f10*current+f11*capacitor+g1*source
+            current=new_current;i[k]=current
+    else:
+        # Exact first-order response to linearly interpolated source samples.
+        tau=l/r if l else r*c;alpha=dt/tau;decay=np.exp(-alpha)
+        ratio=-np.expm1(-alpha)/alpha;previous_weight=ratio-decay;next_weight=1-ratio
+        state=0.
+        for k in range(1,len(t)):
+            forcing=previous_weight*v[k-1]+next_weight*v[k]
+            state=decay*state+(forcing/r if l else forcing)
+            i[k]=state if l else (v[k]-state)/r
     return t,v,i
 
