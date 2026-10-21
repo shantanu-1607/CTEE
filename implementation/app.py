@@ -6,30 +6,30 @@ import pandas as pd
 import streamlit as st
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-import torch
 from threadpoolctl import threadpool_limits
 from ctee.simulator import *
 from ctee.inference import Predictor,trace_policy
 from ctee.csv_io import export_csv,parse_csv
+from ctee.runtime import DEFAULT_RUN
 
 ROOT=Path(__file__).resolve().parent
+RUN_ROOT=DEFAULT_RUN
 st.set_page_config(page_title='CTEE LoadLab',page_icon='⚡',layout='wide')
-torch.set_num_threads(2)
 st.markdown('''<style>.block-container{padding-top:2rem;max-width:1450px}h1{letter-spacing:-1px}
 [data-testid="stMetric"]{border:1px solid #d9e6eb;border-radius:12px;padding:16px}
 </style>''',unsafe_allow_html=True)
 st.title('⚡ CTEE LoadLab')
-st.caption('One shared feature extractor · Two electrical answers · Evidence before confidence')
+st.caption('Built from scratch with NumPy · One shared encoder · Two electrical answers')
 st.info('Research prototype: an ideal controlled-source simulator with a known series RLC branch. Results describe this benchmark; they do not establish real-appliance or hardware accuracy.')
 
 @st.cache_resource
-def predictor():return Predictor(ROOT)
+def predictor(revision):return Predictor(RUN_ROOT)
 
-if not (ROOT/'artifacts/selected_model.pt').exists():
+if not (RUN_ROOT/'artifacts/selected_model.npz').exists():
     st.warning('Train the model first: `.venv/bin/python -m ctee train`')
     st.stop()
 
-pred=predictor()
+pred=predictor((RUN_ROOT/'artifacts/selected_model.npz').stat().st_mtime_ns)
 demo,results,method=st.tabs(['Classify a load','Measured comparisons','How it works'])
 
 def show_prediction(result,waves,frequencies,truth=None,allow_export=True,sample_rate=SAMPLE_RATE):
@@ -94,11 +94,11 @@ with demo:
             st.session_state['last']=(result,w,f,(behaviour,composition))
         if 'last' in st.session_state:show_prediction(*st.session_state['last'])
     elif source=='Held-out benchmark example':
-        manifest=json.loads((ROOT/'data/manifest.json').read_text())
+        manifest=json.loads((RUN_ROOT/'data/manifest.json').read_text())
         name=st.selectbox('Unseen fixture recording',manifest['examples'])
         count=st.slider('Observations available',1,5,3)
         order=[0,1,3,2,4][:count]
-        with np.load(ROOT/f'data/example_{name}.npz',allow_pickle=False) as item:
+        with np.load(RUN_ROOT/f'data/example_{name}.npz',allow_pickle=False) as item:
             w=item['waves'];f=item['frequencies'];ss=item['startup'];truth=(BEHAVIOURS[int(item['behaviour'])],COMPOSITIONS[int(item['composition'])])
         with threadpool_limits(limits=1):r=pred.predict(w,f,order,ss)
         r['selected']=order;show_prediction(r,w,f,truth)
@@ -115,7 +115,7 @@ with demo:
             except (ValueError,UnicodeError) as e:st.error(str(e))
 
 with results:
-    path=ROOT/'reports/test_results.json'
+    path=RUN_ROOT/'reports/test_results.json'
     if path.exists():
         report=json.loads(path.read_text());rows=[]
         for name,conditions in report['conditions'].items():
@@ -123,20 +123,20 @@ with results:
         st.caption('Selected neural model: '+report['selected_neural']+' (validation selection). All figures below use held-out physical configurations.')
         st.dataframe(pd.DataFrame(rows),hide_index=True,width='stretch')
         for filename in ['robustness.png','confusion_matrices.png','acquisition.png']:
-            if (ROOT/'reports/figures'/filename).exists():st.image(str(ROOT/'reports/figures'/filename))
+            if (RUN_ROOT/'reports/figures'/filename).exists():st.image(str(RUN_ROOT/'reports/figures'/filename))
         with st.expander('Statistical comparison and limitations'):st.json(report['statistics'])
-        if (ROOT/'reports/RESULTS.md').exists():st.markdown((ROOT/'reports/RESULTS.md').read_text())
+        if (RUN_ROOT/'reports/RESULTS.md').exists():st.markdown((RUN_ROOT/'reports/RESULTS.md').read_text())
     else:st.info('Final held-out comparisons will appear after the evaluation phase.')
 
 with method:
     st.markdown('''### What the AI does
-It shares one learned electrical representation between two output heads. One predicts CC/CP/CZ behaviour; the other predicts the known passive branch class.
+The network, backpropagation, optimizers, Fourier analysis and metrics are written explicitly using NumPy. It shares one learned electrical representation between two output heads. One predicts CC/CP/CZ behaviour; the other predicts the known passive branch class.
 
 ### Proposed contribution
-Measured voltage-response and spectral fingerprints, valid electrical consistency, and uncertainty-guided acquisition are combined and compared with ordinary features, a noise-trained baseline, analytical rules, and random forests. A new invention or a global best score is not established by a synthetic benchmark.
+Measured voltage-response and spectral fingerprints, valid electrical consistency, and uncertainty-guided acquisition are combined and compared with ordinary features, a noise-trained baseline, and analytical electrical rules. A new invention or a global best score is not established by a synthetic benchmark.
 
 ### Honest confidence
-An accepted result needs multiple voltage levels, useful spectral evidence, a reasonable circuit-family fit, sufficient measured signal quality, and the calibrated confidence threshold. The noise-quality guard uses calibration devices only. Partial-acquisition confidence still needs broader validation. Outside the declared family, a confident answer can be wrong.
+An accepted result needs multiple voltage levels, useful spectral evidence, a reasonable circuit-family fit, sufficient measured signal quality, and the calibrated confidence threshold. The noise-quality guard uses calibration devices only. Temperatures and acceptance thresholds are calibrated separately for each observation count. Outside the declared family, a confident answer can be wrong.
 ''')
     st.markdown((ROOT/'docs/LABEL_CONTRACT.md').read_text())
 

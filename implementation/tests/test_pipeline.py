@@ -38,7 +38,8 @@ def test_policy_requests_voltage_without_hidden_state():
     assert next_probe([0],result)==1
 
 def test_generated_data_has_no_cross_split_parent():
-    root=Path(__file__).resolve().parents[1]
+    from ctee.runtime import DEFAULT_RUN
+    root=DEFAULT_RUN
     if not (root/'data/benchmark.npz').exists():pytest.skip('Run the data phase first')
     d=load(root)
     groups=[set(d['group'][d['split']==s]) for s in ['train','validation','calibration','test']]
