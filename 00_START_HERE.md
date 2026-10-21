@@ -1,60 +1,22 @@
 # CTEE project: start here
 
-**Status: planning only. Prepared 20 October 2026. No simulator, dataset, model, training, or application has been implemented.**
+**Status: implemented and tested, 22 October 2026.** The original plan/PDF remains in this folder as proposal history. The current implementation uses manual NumPy algorithms and a local dashboard.
 
-## The project in one sentence
+The computer reads voltage/current and gives two answers: **CC/CP/CZ behaviour** and **R/L/C branch composition**. Our proposed enhancement adds electrical evidence, confidence checks and extra simulated measurements when needed.
 
-Build one AI system that looks at voltage and current and answers two questions: **how does the load behave when voltage changes, and what kind of R/L/C circuit signature does it have?**
+- Start the app: double-click `implementation/Run_Dashboard.command`; open <http://127.0.0.1:8501>.
+- Read setup and completed phases: [implementation/README.md](implementation/README.md).
+- Read current measured results and limitations: [implementation/RESULTS_NUMPY.md](implementation/RESULTS_NUMPY.md).
+- Understand/present it simply: [implementation/docs/VIVA_GUIDE.md](implementation/docs/VIVA_GUIDE.md).
+- Inspect the adjustable experiments: [implementation/configs/experiments.json](implementation/configs/experiments.json).
+- Check exact class definitions: [implementation/docs/LABEL_CONTRACT.md](implementation/docs/LABEL_CONTRACT.md).
 
-## What the two answers mean
+The current held-out simulator result is **100% clean and 96.67% at 20 dB joint accuracy**, versus **93.33% at 20 dB** for the matching noise-trained baseline. Both answers must be right. A separate pool of 140 new circuits gives 99.17% at 20 dB. All 64 tests pass in a clean environment without ML frameworks. Severe coloured noise remains a failure condition; its rejection is reported separately from accuracy.
 
-| Question | Possible answers | Everyday meaning |
-|---|---|---|
-| How does it respond to voltage? | CC, CP, CZ | Does it try to keep current, power, or impedance constant? |
-| What circuit does it resemble? | R, L, C, RL, RC, LC, RLC | Does it mainly dissipate energy, store it magnetically/electrically, or combine these effects? |
+The source includes manual shared-layer backpropagation, Adam/SGD, Fourier/FFT analysis, circuit fits, transient integration, calibration, metrics and paired statistical comparisons. Plotting/UI libraries are used for display and files. NumPy is allowed by the professor's clarified restriction.
 
-R is resistance, L is inductance, and C is capacitance. A real appliance can have electronic controls, so its operating behaviour and its passive components are different descriptions. The detailed plan makes that distinction explicit.
+The benchmark is an **ideal controlled-source simulator with a known series branch and 18 supported pairs**. It does not establish real-appliance, arbitrary-topology or hardware accuracy. Confirm this scope with the professor before presenting it as the final interpretation of the assignment. It is possible to demonstrate a useful project contribution without claiming worldwide novelty or a guaranteed grade.
 
-## A simple example
+Generated datasets, checkpoints, plots and detailed reports are stored locally in `implementation/runs/numpy_v1/` and ignored by Git. The app loads that new run. Earlier prototype files remain historical; their metrics must not be attributed to the current NumPy implementation.
 
-Imagine a load using 100 W at its usual voltage, with power factor approximately one. Reduce the voltage by 10%:
-
-| Behaviour | What happens? | Approximate power |
-|---|---|---:|
-| CC | Current stays the same | 90 W |
-| CP | Current increases to preserve power | 100 W |
-| CZ | Current falls along with voltage | 81 W |
-
-These are idealised examples over a valid operating range. They explain why we need measurements at more than one voltage. At one voltage, the three loads could look identical.
-
-## What we will actually do later
-
-1. Agree precise class definitions and simulate circuits with known answers.
-2. Record their voltage/current waveforms under several conditions.
-3. Extract useful clues: RMS, phase, power, harmonics, impedance, voltage-response slopes, and transient behaviour.
-4. Train a simple shared neural network with two output heads as the baseline.
-5. Add our proposed improvement: electrical consistency checks, robustness to measurement noise, calibrated confidence, and an extra simulated measurement when evidence is insufficient.
-6. Compare the improved model against the baseline on unseen circuits and difficult conditions.
-7. Deploy the trained model in a local dashboard with waveform plots, both predictions, an explanation, and baseline comparisons.
-
-## What makes the project interesting
-
-An ordinary classifier guesses from the measurements it receives. Our proposed system also asks: **Do these measurements contain enough information? Do the answers agree with electrical laws? Which extra measurement would help most?**
-
-The proposed contribution is *uncertainty-guided electrical fingerprinting*. It is a project-level research hypothesis, not a claim that nobody in the world has used these ideas before. The experiments must show whether it improves reliability or reduces measurement time.
-
-## Read these files in this order
-
-- `01_IMPLEMENTATION_PLAN.pdf`: the main readable plan, including architecture, data, novelty, experiments, timeline, and an easy explanation.
-- `01_IMPLEMENTATION_PLAN.md`: the editable source of the main plan.
-- `02_EXECUTION_CHECKLIST.md`: ordered tasks and completion gates for the later implementation.
-- `03_PROFESSOR_DISCUSSION.md`: a short proposal and the important scope questions to take to your professor.
-- `References/`: copies of your three papers and the supplied screenshot. The bibliography and literature comparison are in the main plan.
-
-## Working assumptions
-
-One student, an existing laptop, approximately four weeks and 45-65 focused hours, and simulation as the required demonstration. Physical hardware is optional. Change the schedule when the actual deadline and lab access are known.
-
-The first decision is the meaning of circuit composition for an electronically controlled CC/CP load. The recommended interpretation is a documented passive input network plus a controller; this needs professor agreement before data generation. We will not manufacture 21 arbitrary class combinations or pretend that all are identifiable.
-
-No grade can be guaranteed. This plan is designed to produce clear evidence for both the 4-mark implementation requirement and the 11-mark enhancement requirement.
+Local commits use the repository owner's configured identity, without assistant attribution. Nothing is automatically pushed to GitHub.
