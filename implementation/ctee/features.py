@@ -1,7 +1,7 @@
 """Electrical evidence computed only from the selected measured waveforms."""
 import numpy as np
 from functools import lru_cache
-from scipy.optimize import nnls
+from .numerics import nonnegative_fit, projection_matrix, regression_slope, fft_signature, norm
 from .simulator import HARMONICS,SAMPLE_RATE,COMPOSITIONS
 
 PER_PROBE_NAMES=("log_vrms","log_irms","active_power","true_pf","sin_phase","cos_phase",
@@ -10,7 +10,7 @@ PER_PROBE_NAMES=("log_vrms","log_irms","active_power","true_pf","sin_phase","cos
 BASE_NAMES=[f"probe{p}_{s}" for p in range(5) for s in PER_PROBE_NAMES]
 EXTRA_NAMES=["current_voltage_slope","power_voltage_slope","voltage_span","slope_valid",
              "R_fraction","L_fraction","C_fraction","spectral_fit_error","spectral_valid",
-             *[f"physics_{x}" for x in COMPOSITIONS],"phase_leading_fraction",
+             *[f"physics_{x}" for x in COMPOSITIONS],"phase_leading_fraction", "fft_high_frequency_ratio", "fft_entropy",
              "startup_peak_ratio","startup_early_rms_ratio","startup_late_rms_ratio",
              "startup_ringing_ratio","startup_power_fraction","startup_available"]
 FEATURE_NAMES=BASE_NAMES+EXTRA_NAMES
@@ -23,7 +23,7 @@ def _basis(n,frequency,sample_rate):
     # Joint sine/cosine least squares works with arbitrary phase and noncoherent f.
     arg=2*np.pi*np.outer(t,frequency*HARMONICS)
     design=np.column_stack([np.cos(arg),np.sin(arg),np.ones(len(t))])
-    return design,np.linalg.pinv(design)
+    return design,projection_matrix(design)
 
 def phasors(wave,frequency,sample_rate=SAMPLE_RATE):
     design,pinv=_basis(wave.shape[-1],float(frequency),sample_rate)
@@ -45,9 +45,9 @@ def spectral_evidence(vp,ip,se):
     b=np.r_[z.real,z.imag]
     weights=np.minimum(np.abs(ip[valid])**2/np.maximum(np.abs(vp[valid]),1e-10),1e6)
     weights=weights/max(weights.max(),1e-12)
-    coef,_=nnls(a*np.r_[weights,weights][:,None],b*np.r_[weights,weights])
+    coef,_=nonnegative_fit(a*np.r_[weights,weights][:,None],b*np.r_[weights,weights])
     fractions=coef/max(coef.sum(),1e-12)
-    residual=float(np.linalg.norm((a@coef-b)*np.r_[weights,weights])/max(np.linalg.norm(b*np.r_[weights,weights]),1e-12))
+    residual=float(norm((a@coef-b)*np.r_[weights,weights])/max(norm(b*np.r_[weights,weights]),1e-12))
     # Smooth evidence for component presence, not hidden simulator parameters.
     presence=np.clip((fractions-.015)/.035,.001,.999)
     scores=[]
@@ -77,8 +77,8 @@ def extract(waves,frequencies,selected=None,sample_rate=SAMPLE_RATE,startup=None
         vp,ip=pv
         z=vp[0]/ip[0] if abs(ip[0])>1e-10 else 0j
         phi=np.angle(z);zabs=max(abs(z),1e-9)
-        thdv=float(np.linalg.norm(vp[1:])/max(abs(vp[0]),1e-12))
-        thdi=float(np.linalg.norm(ip[1:])/max(abs(ip[0]),1e-12))
+        thdv=float(norm(vp[1:])/max(abs(vp[0]),1e-12))
+        thdi=float(norm(ip[1:])/max(abs(ip[0]),1e-12))
         area=float(np.sum(v*np.roll(i,-1)-i*np.roll(v,-1))/(len(v)*vr*ir))
         block=[np.log(vr),np.log(ir),power,pf,np.sin(phi),np.cos(phi),np.log(zabs),z.real/zabs,z.imag/zabs,
                thdv,thdi,np.max(abs(i))/ir,area,1.]
@@ -92,13 +92,14 @@ def extract(waves,frequencies,selected=None,sample_rate=SAMPLE_RATE,startup=None
     if len(amplitude)>=2:
         arr=np.array(amplitude);lv=np.log(arr[:,0]);span=float(np.ptp(lv))
         if span>.025:
-            slope_i=float(np.polyfit(lv,np.log(arr[:,1]),1)[0])
-            if np.min(arr[:,2])>1e-8:slope_p=float(np.polyfit(lv,np.log(arr[:,2]),1)[0])
+            slope_i=regression_slope(lv,np.log(arr[:,1]))
+            if np.min(arr[:,2])>1e-8:slope_p=regression_slope(lv,np.log(arr[:,2]))
             slope_valid=True
     scores=np.zeros(7);fractions=np.zeros(3);error=1.;spec=False
     if best is not None:scores,fractions,error,spec=best
     extras=[np.clip(slope_i,-4,4),np.clip(slope_p,-4,4),span,float(slope_valid),*fractions,error,float(spec),*scores,
             np.mean([m[4]<0 for m in measurements.values()])]
+    extras.extend(fft_signature(waves[selected[0],1],sample_rate,float(frequencies[selected[0]])))
     dynamics=np.zeros(6)
     if startup is not None:
         sv,si=np.asarray(startup,dtype=float)
