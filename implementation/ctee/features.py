@@ -80,6 +80,7 @@ def extract(waves,frequencies,selected=None,sample_rate=SAMPLE_RATE,startup=None
         thdv=float(norm(vp[1:])/max(abs(vp[0]),1e-12))
         thdi=float(norm(ip[1:])/max(abs(ip[0]),1e-12))
         area=float(np.sum(v*np.roll(i,-1)-i*np.roll(v,-1))/(len(v)*vr*ir))
+        # sin(phi)=Q1/(|V1||I1|): normalized fundamental reactive power.
         block=[np.log(vr),np.log(ir),power,pf,np.sin(phi),np.cos(phi),np.log(zabs),z.real/zabs,z.imag/zabs,
                thdv,thdi,np.max(abs(i))/ir,area,1.]
         features[p*14:(p+1)*14]=block
@@ -124,6 +125,7 @@ def physics_logits(features):
 def evidence_summary(features):
     x=np.asarray(features)
     return {"current_voltage_slope":float(x[N_BASE]),"power_voltage_slope":float(x[N_BASE+1]),
+            "nominal_fundamental_reactive_fraction":float(x[4]),
             "voltage_span":float(x[N_BASE+2]),"slope_valid":bool(x[N_BASE+3]),
             "relative_R":float(x[N_BASE+4]),"relative_L":float(x[N_BASE+5]),"relative_C":float(x[N_BASE+6]),
             "spectral_fit_error":float(x[N_BASE+7]),"spectral_valid":bool(x[N_BASE+8])}

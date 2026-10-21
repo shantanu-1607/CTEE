@@ -52,6 +52,7 @@ def show_prediction(result,waves,frequencies,truth=None,allow_export=True,sample
         st.write('**Electrical evidence**')
         st.write(f"Current/voltage slope: **{ev['current_voltage_slope']:.3f}** (ideal CC 0, CP -1, CZ +1)")
         st.write(f"Voltage variation available: **{'yes' if ev['slope_valid'] else 'no'}**")
+        st.write(f"Normalised fundamental reactive power: **{ev['nominal_fundamental_reactive_fraction']:.3f}** (positive inductive, negative capacitive)")
         st.write(f"Frequency evidence available: **{'yes' if ev['spectral_valid'] else 'no'}**")
         st.write(f"Series-family fit residual: **{ev['spectral_fit_error']:.4f}**")
         if 'estimated_minimum_snr_db' in decision:st.write(f"Estimated signal quality: **{decision['estimated_minimum_snr_db']:.1f} dB SNR**")
