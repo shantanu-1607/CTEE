@@ -14,12 +14,11 @@ def test_parent_split_is_disjoint_and_complete():
     assert [list(split.values()).count(x) for x in ['train','validation','calibration','test']]==[60,15,10,15]
 
 def test_two_head_serialization_roundtrip(tmp_path):
-    import torch
-    model=SharedClassifier(True,.5).eval()
+    model=SharedClassifier(True,.5)
     x=np.zeros((4,N_FEATURES),dtype=np.float32)
     before=predict_logits(model,x)
-    save_model(tmp_path/'model.pt',model,11,'test')
-    restored,_=load_model(tmp_path/'model.pt');after=predict_logits(restored,x)
+    save_model(tmp_path/'model.npz',model,11,'test')
+    restored,_=load_model(tmp_path/'model.npz');after=predict_logits(restored,x)
     assert before[0].shape==(4,3) and before[1].shape==(4,7)
     np.testing.assert_allclose(before[0],after[0]);np.testing.assert_allclose(before[1],after[1])
 
@@ -47,3 +46,13 @@ def test_generated_data_has_no_cross_split_parent():
         for b in groups[i+1:]:assert not a&b
     assert np.isfinite(d['X']).all()
 
+
+
+def test_manual_temperature_calibration_never_increases_calibration_nll():
+    from ctee.model import temperatures, probabilities
+    from ctee.metrics import probability_metrics
+    z=np.array([[10.,0.],[10.,0.],[0.,10.],[0.,10.]])
+    y=np.array([0,1,0,1])
+    t=temperatures(z,y)
+    assert t>1
+    assert probability_metrics(y,probabilities(z,t))['nll']<=probability_metrics(y,probabilities(z))['nll']

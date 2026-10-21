@@ -243,13 +243,13 @@ class TwoHeadMLP:
         details = {"loss": float(loss), "behaviour_ce": lb, "composition_ce": lc, "physics_huber": physics_loss}
         return details, grads
 
-    def save(self, path):
+    def save(self, path, training_metadata=None):
         """Array checkpoint with JSON metadata; no pickle or framework format."""
         path = Path(path)
         if path.suffix != ".npz":
             raise ValueError("Scratch checkpoints use the .npz extension")
         path.parent.mkdir(parents=True, exist_ok=True)
-        meta = json.dumps({"format": "ctee_numpy_v1", "config": asdict(self.config)})
+        meta = json.dumps({"format": "ctee_numpy_v1", "config": asdict(self.config), "training": training_metadata or {}})
         np.savez_compressed(path, **self.params, mean=self.mean, scale=self.scale, metadata=np.array(meta))
 
     @classmethod
