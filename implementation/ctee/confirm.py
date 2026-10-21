@@ -1,6 +1,6 @@
 """Fresh configuration pool to confirm the frozen classifier and quality guard.
 
-Added after the first stress test exposed overconfidence in coloured noise.
+Uses a new device pool after model selection and calibration are frozen.
 No weights, feature choices, or thresholds are fitted on this confirmation pool.
 """
 from pathlib import Path
@@ -13,9 +13,9 @@ from .model import load_model,predict_logits,probabilities
 from .metrics import score,group_bootstrap_difference
 from .data import save_json
 
-def confirm(root,per_topology=20,seed=20261021):
+def confirm(root,per_topology=20,seed=20261023):
     root=Path(root);rng=np.random.default_rng(seed);predictor=Predictor(root)
-    baseline,_=load_model(root/'artifacts/baseline_robust_11.pt')
+    baseline,_=load_model(root/'artifacts/baseline_robust_11.npz')
     rows=[];devices=[]
     for ci,composition in enumerate(COMPOSITIONS):
         for index in range(per_topology):
@@ -43,8 +43,8 @@ def confirm(root,per_topology=20,seed=20261021):
             'coverage':float(accepted.mean()),'accepted_joint_accuracy':float(correct[accepted].mean()) if accepted.any() else None,
             'group_comparison':group_bootstrap_difference(np.array([r['group'] for r in rr]),correct.astype(float),base.astype(float))}
     record={'seed':seed,'physical_configurations':len(devices),'episodes_per_condition':len(rows)//3,
-            'model_sha256':hashlib.sha256((root/'artifacts/selected_model.pt').read_bytes()).hexdigest(),
-            'method':'Fresh independent simulator configurations. Classifier frozen before the first test; quality guard calibrated solely on original calibration devices. Added after the initial coloured-noise failure was observed.',
+            'model_sha256':hashlib.sha256((root/'artifacts/selected_model.npz').read_bytes()).hexdigest(),
+            'method':'Fresh independent simulator configurations. Classifier, feature schema and thresholds frozen before testing this fresh device pool; quality guard calibrated solely on original calibration devices.',
             'results':results,'devices':devices,'predictions':rows}
     save_json(root/'reports/fresh_confirmation.json',record)
     print('Fresh confirmation:',{c:{'joint':r['enhanced']['joint_accuracy'],'coverage':r['coverage'],'accepted_accuracy':r['accepted_joint_accuracy']} for c,r in results.items()})

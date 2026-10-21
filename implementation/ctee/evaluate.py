@@ -1,53 +1,32 @@
 from pathlib import Path
-from itertools import combinations
 import time,json
 import numpy as np
-from scipy import stats
-from sklearn.metrics import mean_squared_error,mean_absolute_error,r2_score
-from scipy.special import softmax
-import joblib
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 from .data import load,save_json,CONDITIONS
 from .model import load_model,predict_logits,probabilities
 from .features import physics_logits,extract,N_BASE
-from .metrics import score,probability_metrics,group_bootstrap_difference
+from .metrics import score,probability_metrics,group_bootstrap_difference,continuous_metrics
+from .statistics import compare_panels
 from .simulator import *
 from .inference import Predictor,trace_policy
 
 def panels_analysis(group,labels,correct):
     ids=np.unique(group);rng=np.random.default_rng(94)
-    panels=[[] for _ in range(10)]
-    for composition in range(7):
+    count=min(10,min(sum(labels[group==g][0]==c for g in ids) for c in np.unique(labels)))
+    if count<2:return {'limitation':'At least two independent panels per class are required'}
+    panels=[[] for _ in range(count)]
+    for composition in np.unique(labels):
         cls=[g for g in ids if labels[group==g][0]==composition]
         rng.shuffle(cls)
-        for i,g in enumerate(cls):panels[i%10].append(g)
+        for i,g in enumerate(cls):panels[i%count].append(g)
     names=list(correct)
     matrix=np.array([[np.mean(correct[n][np.isin(group,panel)]) for n in names] for panel in panels])
-    n,k=matrix.shape;grand=matrix.mean();err=matrix-matrix.mean(0)-matrix.mean(1)[:,None]+grand
-    ss_model=n*np.sum((matrix.mean(0)-grand)**2);ss_error=np.sum(err**2)
-    f=float((ss_model/(k-1))/(ss_error/((n-1)*(k-1)))) if ss_error>0 else 1e12
-    cov=np.cov(matrix,rowvar=False);center=np.eye(k)-np.ones((k,k))/k;s=center@cov@center
-    eps=float(np.trace(s)**2/((k-1)*np.trace(s@s))) if np.trace(s@s)>0 else 1.
-    eps=float(np.clip(eps,1/(k-1),1))
-    normality=float(stats.shapiro(err.ravel()).pvalue) if np.std(err)>0 else 1.
-    friedman=stats.friedmanchisquare(*matrix.T)
-    pairs=[]
-    for a,b in combinations(range(k),2):
-        delta=matrix[:,a]-matrix[:,b]
-        p=1. if np.allclose(delta,0) else float(stats.wilcoxon(delta,zero_method='wilcox').pvalue)
-        pairs.append({'a':names[a],'b':names[b],'p':p})
-    previous=0.
-    for rank,pair in enumerate(sorted(pairs,key=lambda x:x['p'])):
-        previous=max(previous,min(1.,pair['p']*(len(pairs)-rank)));pair['holm_adjusted_p']=previous
-    return {'models':names,'panels':10,'groups_per_panel':[len(p) for p in panels],
-            'repeated_measures_ANOVA_F':f,'greenhouse_geisser_epsilon':eps,
-            'ANOVA_GG_p':float(stats.f.sf(f,eps*(k-1),eps*(k-1)*(n-1))),
-            'shapiro_residual_p':normality,'friedman_statistic':float(friedman.statistic),
-            'friedman_p':float(friedman.pvalue),'preferred_test':'Friedman' if normality<.05 else 'GG-corrected repeated-measures ANOVA',
-            'posthoc_paired_wilcoxon_holm':pairs,
-            'limitation':'Ten stratified disjoint held-out simulator device panels; small panels, conditional on these fixed trained models. Not cross-validation folds or training seeds.'}
+    result=compare_panels(matrix,names)
+    result.update(groups_per_panel=[len(p) for p in panels],panel_accuracies=matrix.tolist(),
+                  limitation='Stratified disjoint held-out simulator device panels, conditional on fixed trained models. Not cross-validation folds, independent laboratories, or training seeds.')
+    return result
 
 def evaluate(root):
     root=Path(root);out=root/'reports';fig=out/'figures';fig.mkdir(parents=True,exist_ok=True)
@@ -57,21 +36,18 @@ def evaluate(root):
     results={};predictions={}
     for entry in validation['runs']:
         name=entry['name']
-        if entry['variant']=='random_forest':
-            rf=joblib.load(root/f'artifacts/{name}.joblib');pb,pc=rf.predict_proba(x[:,:entry['feature_count']])
-        else:
-            model,_=load_model(root/f'artifacts/{name}.pt');b,c=predict_logits(model,x);pb=probabilities(b);pc=probabilities(c)
+        model,_=load_model(root/f'artifacts/{name}.npz');b,c=predict_logits(model,x);pb=probabilities(b);pc=probabilities(c)
         predictions[name]=(pb,pc)
         results[name]={s:score(yb[cond==s],yc[cond==s],pb[cond==s],pc[cond==s]) for s in np.unique(cond)}
-    rb,rc=physics_logits(x);predictions['electrical_rules']=(softmax(rb,axis=1),softmax(rc,axis=1))
-    results['electrical_rules']={s:score(yb[cond==s],yc[cond==s],softmax(rb[cond==s],axis=1),softmax(rc[cond==s],axis=1)) for s in np.unique(cond)}
+    rb,rc=physics_logits(x);predictions['electrical_rules']=(probabilities(rb),probabilities(rc))
+    results['electrical_rules']={s:score(yb[cond==s],yc[cond==s],probabilities(rb[cond==s]),probabilities(rc[cond==s])) for s in np.unique(cond)}
     selected=validation['selected_neural'];pb,pc=predictions[selected]
     baseb,basec=predictions['baseline_robust_11']
     correct=((pb.argmax(1)==yb)&(pc.argmax(1)==yc)).astype(float)
     base_correct=((baseb.argmax(1)==yb)&(basec.argmax(1)==yc)).astype(float)
     mask=cond=='noise20'
     comparison=group_bootstrap_difference(groups[mask],correct[mask],base_correct[mask])
-    names=['baseline_robust_11','features_only_11',selected,'rf_enhanced','electrical_rules']
+    names=['baseline_robust_11','features_only_11',selected,'electrical_rules']
     names=list(dict.fromkeys(names))
     panel_correct={n:((predictions[n][0].argmax(1)==yb)&(predictions[n][1].argmax(1)==yc)).astype(float)[mask] for n in names}
     statistics=panels_analysis(groups[mask],yc[mask],panel_correct)
@@ -85,16 +61,19 @@ def evaluate(root):
     regression={}
     for s in np.unique(cond):
         m=cond==s;truth=np.array([0.,-1.,1.])[yb[m]];estimate=x[m,N_BASE]
-        rmse=float(np.sqrt(mean_squared_error(truth,estimate)))
-        regression[s]={'slope_MAE':float(mean_absolute_error(truth,estimate)),'slope_MSE':float(mean_squared_error(truth,estimate)),
-                       'slope_RMSE':rmse,'slope_R2':float(r2_score(truth,estimate)),
-                       'slope_RPD':float(np.std(truth,ddof=1)/rmse) if rmse>0 else None,
-                       'MAPE':'not defined: CC target is zero; labels are never used as continuous codes'}
+        regression[s]=continuous_metrics(truth,estimate)
     # Raw predictions and all truths are exported for independent re-analysis.
     np.savez_compressed(out/'heldout_predictions.npz',yb=yb,yc=yc,groups=groups,conditions=cond,
                         pb=calibrated_b,pc=calibrated_c,baseline_pb=baseb,baseline_pc=basec)
+    seed_summary={}
+    for family in ['baseline_robust','physics_enhanced']:
+        entries=[r for r in validation['runs'] if r['variant']==family]
+        seed_summary[family]={condition:{'mean':float(np.mean([results[r['name']][condition]['joint_accuracy'] for r in entries])),
+                                        'sample_sd':float(np.std([results[r['name']][condition]['joint_accuracy'] for r in entries],ddof=1)) if len(entries)>1 else None,
+                                        'seeds':[r['seed'] for r in entries]}
+                              for condition in np.unique(cond)}
     save_json(out/'test_results.json',{'selected_neural':selected,'conditions':results,'comparison_at_20dB':comparison,
-             'probability_metrics':probability_results,'continuous_estimation':regression,'statistics':statistics,
+             'implementation':'manual_numpy','training_seed_summary':seed_summary,'probability_metrics':probability_results,'continuous_estimation':regression,'statistics':statistics,
              'scope':'held-out configurations from the same ideal controlled-source generator; not appliance or hardware validation'})
     plot_results(results,selected,fig)
     plot_confusions(results[selected]['noise20'],fig)
@@ -111,7 +90,7 @@ def evaluate(root):
     return results
 
 def plot_results(results,selected,fig):
-    names=['baseline_clean_11','baseline_robust_11','features_only_11',selected,'rf_enhanced','electrical_rules'];names=list(dict.fromkeys(names))
+    names=['baseline_clean_11','baseline_robust_11','features_only_11',selected,'electrical_rules'];names=list(dict.fromkeys(names))
     conditions=['clean','noise20','sensor_shift','frequency_shift','coloured10']
     ax=plt.figure(figsize=(10,5)).subplots()
     for n in names:ax.plot(conditions,[results[n][s]['joint_accuracy'] for s in conditions],marker='o',label=n)
@@ -141,7 +120,7 @@ def evaluate_policies(root,predictor):
                 snr,kind=CONDITIONS[condition];seed=9823+gi*100+bi
                 waves,fs=episode(circuit,b,seed,snr,kind);ss=corrupt(start,np.random.default_rng(seed),snr,kind)
                 for policy in ['fixed','random','adaptive']:
-                    result=trace_policy(predictor,waves,fs,ss,policy,seed)
+                    result=trace_policy(predictor,waves,fs,ss,policy,seed,diagnostic=True)
                     decision=result['decision']
                     records.append({'group':gi,'condition':condition,'policy':policy,
                        'accepted':decision['accepted'],'probes':decision['budget'],
@@ -160,7 +139,7 @@ def evaluate_policies(root,predictor):
                'mean_recording_seconds_lower_bound':float(.3+DURATION*np.mean([r['probes'] for r in rr])),
                'joint_accuracy_by_probe_budget':np.mean([r['curve_correct'] for r in rr],axis=0).tolist()}
     save_json(root/'reports/acquisition_results.json',{'results':summaries,'records':records,
-        'limitation':'Fixed/random/adaptive use identical per-episode waveforms and frozen model. Threshold calibrated on full-library records; partial acquisition reliability is empirically tested, not guaranteed. Recording time omits settling/actuation.'})
+        'limitation':'Fixed/random/adaptive use identical per-episode waveforms and frozen model. Temperature and threshold calibrated separately for each probe count; reliability outside the calibration distribution is not guaranteed. Diagnostic traces continue after the operational stop only to draw matched-budget curves. Recording time omits settling/actuation.'})
     fig,ax=plt.subplots(figsize=(7,4))
     for policy in ['fixed','random','adaptive']:
         ax.plot(range(1,6),summaries['noise20'][policy]['joint_accuracy_by_probe_budget'],marker='o',label=policy)
@@ -177,7 +156,7 @@ def benchmark_latency(root,predictor):
     result={'feature_plus_model_ms':{'p50':float(np.percentile(times,50)),'p95':float(np.percentile(times,95))},
             'model_ms':{'p50':float(np.percentile(infer,50)),'p95':float(np.percentile(infer,95))},
             'n':100,'device':'local CPU','includes_acquisition':False,'includes_UI':False,
-            'model_bytes':(root/'artifacts/selected_model.pt').stat().st_size}
+            'model_bytes':(root/'artifacts/selected_model.npz').stat().st_size}
     save_json(root/'reports/latency.json',result);return result
 
 def write_summary(root,results,selected,comparison,policy,latency):
@@ -191,8 +170,8 @@ def write_summary(root,results,selected,comparison,policy,latency):
     for p,r in policy['noise20'].items():lines.append(f"| {p} | {r['mean_probes']:.2f} | {r['coverage']:.2%} | {r['accepted_joint_accuracy']:.2%} |" if r['accepted_joint_accuracy'] is not None else f"| {p} | {r['mean_probes']:.2f} | 0% | undefined |")
     lines+=['',f"Feature + model compute p95: {latency['feature_plus_model_ms']['p95']:.2f} ms on the local CPU, excluding acquisition and UI.",
             '', '## Interpretation','',
-            'Use the noise-trained baseline for the fair main comparison. The clean-only baseline is a distribution-shift demonstration, not the sole baseline. An added physics penalty is supported only if its ablation improves the measured result. The analytical rules or random forest may match or beat a neural variant; report that honestly.',
-            '', 'Three physics-model training seeds are included. Other variants currently use one seed. Test confidence intervals resample physical branches, not windows. Ten simulator device panels support a supplemental ANOVA/Friedman analysis; they are not real laboratories.',
-            '', 'The initial coloured-noise stress test exposed confident errors. A measured-SNR operating-range guard was subsequently calibrated on calibration devices only; the original evaluation is archived in reports/history. A fresh independent configuration pool checks the frozen classifier and guard in fresh_confirmation.json. Low coverage/rejection is not increased classification accuracy.',
-            '', 'Partial-acquisition calibration, independent ngspice verification, broader controller families, real datasets with verified dual labels, hardware, and external generalisation remain open validation work. See all JSON/NPZ exports for exact values and failure cases.']
+            'Use the noise-trained baseline for the fair main comparison. The clean-only baseline is a distribution-shift demonstration, not the sole baseline. An added physics penalty is supported only if its ablation improves the measured result. Analytical electrical rules may match or beat a neural variant; report that honestly. All classifiers, optimizers, features and metrics in this run use explicit NumPy algorithms.',
+            '', 'The noise-trained baseline and enhanced model each use three training seeds. The clean-only and features-only ablations use one seed. Test confidence intervals resample physical branches, not windows. Ten simulator device panels support a supplemental ANOVA/Friedman analysis; they are not real laboratories.',
+            '', 'The input-quality guard and calibration-by-budget were fitted on calibration devices before this test. A fresh independent configuration pool checks the frozen classifier and guard in fresh_confirmation.json. Low coverage/rejection is not increased classification accuracy.',
+            '', 'Independent ngspice verification, broader controller families, real datasets with verified dual labels, hardware, and external generalisation remain open validation work. See all JSON/NPZ exports for exact values and failure cases.']
     (root/'reports/RESULTS.md').write_text('\n'.join(lines)+'\n')
