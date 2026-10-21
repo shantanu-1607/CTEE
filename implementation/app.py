@@ -11,6 +11,7 @@ from ctee.simulator import *
 from ctee.inference import Predictor,trace_policy
 from ctee.csv_io import export_csv,parse_csv
 from ctee.runtime import DEFAULT_RUN
+from ctee.parameters import parameter_summary,export_parameters,preview_edit
 
 ROOT=Path(__file__).resolve().parent
 RUN_ROOT=DEFAULT_RUN
@@ -30,7 +31,7 @@ if not (RUN_ROOT/'artifacts/selected_model.npz').exists():
     st.stop()
 
 pred=predictor((RUN_ROOT/'artifacts/selected_model.npz').stat().st_mtime_ns)
-demo,results,method=st.tabs(['Classify a load','Measured comparisons','How it works'])
+demo,results,method,parameters=st.tabs(['Classify a load','Measured comparisons','How it works','Weights and learning'])
 
 def show_prediction(result,waves,frequencies,truth=None,allow_export=True,sample_rate=SAMPLE_RATE):
     decision=result['decision'] if 'decision' in result else result
@@ -56,6 +57,8 @@ def show_prediction(result,waves,frequencies,truth=None,allow_export=True,sample
         st.write(f"Frequency evidence available: **{'yes' if ev['spectral_valid'] else 'no'}**")
         st.write(f"Series-family fit residual: **{ev['spectral_fit_error']:.4f}**")
         if 'estimated_minimum_snr_db' in decision:st.write(f"Estimated signal quality: **{decision['estimated_minimum_snr_db']:.1f} dB SNR**")
+        if pred.model.config.learned_physics_gate:
+            st.write('Learned physics trust: '+', '.join(f"{k} {v:.1%}" for k,v in decision['physics_gates'].items()))
         st.caption('Component fractions are a rescaled equivalent fit, not measurements of hidden physical R/L/C values.')
     selected=decision.get('selected',[0])
     p=selected[-1]
@@ -141,3 +144,45 @@ An accepted result needs multiple voltage levels, useful spectral evidence, a re
 ''')
     st.markdown((ROOT/'docs/LABEL_CONTRACT.md').read_text())
 
+
+with parameters:
+    st.subheader('The ML parameters: actual weights and biases')
+    st.write('Every tensor below is learned by our own backpropagation and Adam/SGD updates. Initial values come from the recorded seed; the change columns show what training learned.')
+    summary=parameter_summary(pred.model)
+    st.write(f"**{sum(r['count'] for r in summary):,} trainable values** across {len(summary)} tensors. `W0`, `W1` belong to the shared encoder; head tensors belong to behaviour/composition; gate tensors learn when to trust physics evidence.")
+    st.dataframe(pd.DataFrame(summary),hide_index=True,width='stretch')
+    st.download_button('Download every learned weight and bias',export_parameters(pred.model),'ctee_learned_parameters.csv','text/csv')
+    tensor=st.selectbox('Weight or bias tensor',list(pred.model.params),key='parameter_tensor')
+    matrix=pred.model.params[tensor]
+    st.write('Selected tensor values')
+    st.dataframe(pd.DataFrame(np.atleast_2d(matrix)),width='stretch')
+    if st.checkbox('Show weight heatmap'):
+        heatmap=go.Figure(go.Heatmap(z=np.atleast_2d(matrix),colorscale='RdBu',zmid=0))
+        heatmap.update_layout(height=350,xaxis_title='Output coordinate',yaxis_title='Input coordinate')
+        st.plotly_chart(heatmap,width='stretch')
+    history_path=RUN_ROOT/'reports/training_history.json'
+    learning_path=RUN_ROOT/'reports/parameter_learning.json'
+    if learning_path.exists():
+        learned=json.loads(learning_path.read_text())
+        history=json.loads(history_path.read_text())[learned['selected_neural']]['history']
+        st.write(f"Training used **{learned['optimizer_steps']:,} optimizer steps**; selected epoch **{learned['best_epoch']}** by validation loss.")
+        st.line_chart(pd.DataFrame(history).set_index('epoch')[['mean_gradient_norm','parameter_update_l2']])
+        st.caption('Gradient norm measures the learning signal. Update norm measures the actual movement of all weights/biases in that epoch. Selected weights are restored from the best validation checkpoint.')
+    st.subheader('Try changing one weight')
+    st.write('This makes an isolated copy for an experiment. The deployed model and its saved benchmark stay intact. Manual edits require new evaluation and calibration before deployment.')
+    row=int(st.number_input('Parameter row / bias index',min_value=0,max_value=matrix.shape[0]-1,value=0,step=1,key='parameter_row_'+tensor))
+    index=(row,)
+    if matrix.ndim==2:
+        column=int(st.number_input('Parameter column',min_value=0,max_value=matrix.shape[1]-1,value=0,step=1,key='parameter_column_'+tensor))
+        index=(row,column)
+    delta=st.slider('Temporary weight change',-1.,1.,0.,step=.01,key='parameter_delta')
+    st.caption(f'Current selected value: {matrix[index]:.8f}; experimental value: {matrix[index]+delta:.8f}')
+    if st.button('Preview this weight change',key='preview_weight'):
+        if 'last' not in st.session_state:st.info('First classify a new simulated fixture in the first tab.')
+        else:
+            last=st.session_state['last'][0];decision=last.get('decision',last)
+            if 'features' not in decision:st.info('Classify the fixture again to capture the feature vector for this experiment.')
+            else:
+                with threadpool_limits(limits=1):_,edited=preview_edit(pred.model,np.array(decision['features']),tensor,index,float(delta))
+                st.json(edited)
+                st.caption('These are raw softmax probabilities before temperature calibration; compare original with edited, not with the calibrated headline confidence.')
