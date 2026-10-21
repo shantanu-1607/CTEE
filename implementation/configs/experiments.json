@@ -1,0 +1,23 @@
+{
+  "version": "numpy_v1",
+  "data_seed": 20261022,
+  "configurations_per_topology": 100,
+  "training": {
+    "hidden_widths": [96, 64], "activation": "leaky_relu", "negative_slope": 0.01,
+    "dropout": 0.05, "initialization": "he", "dtype": "float64",
+    "optimizer": "adam", "learning_rate": 0.002, "batch_size": 256,
+    "epochs": 120, "patience": 20, "weight_decay": 0.0001,
+    "beta1": 0.9, "beta2": 0.999, "epsilon": 1e-8,
+    "clip_norm": 5.0, "schedule": "constant", "label_smoothing": 0.0
+  },
+  "runs": [
+    {"variant": "baseline_clean", "enhanced": false, "robust": false, "prior_strength": 0.0, "physics_loss": 0.0, "seed": 11},
+    {"variant": "baseline_robust", "enhanced": false, "robust": true, "prior_strength": 0.0, "physics_loss": 0.0, "seed": 11},
+    {"variant": "baseline_robust", "enhanced": false, "robust": true, "prior_strength": 0.0, "physics_loss": 0.0, "seed": 22},
+    {"variant": "baseline_robust", "enhanced": false, "robust": true, "prior_strength": 0.0, "physics_loss": 0.0, "seed": 33},
+    {"variant": "features_only", "enhanced": true, "robust": true, "prior_strength": 0.0, "physics_loss": 0.0, "seed": 11},
+    {"variant": "physics_enhanced", "enhanced": true, "robust": true, "prior_strength": 0.5, "physics_loss": 0.03, "seed": 11},
+    {"variant": "physics_enhanced", "enhanced": true, "robust": true, "prior_strength": 0.5, "physics_loss": 0.03, "seed": 22},
+    {"variant": "physics_enhanced", "enhanced": true, "robust": true, "prior_strength": 0.5, "physics_loss": 0.03, "seed": 33}
+  ]
+}
