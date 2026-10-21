@@ -11,6 +11,7 @@ from .metrics import score,probability_metrics,group_bootstrap_difference,contin
 from .statistics import compare_panels
 from .simulator import *
 from .inference import Predictor,trace_policy
+from .gate_analysis import analyze_gates
 
 def panels_analysis(group,labels,correct):
     ids=np.unique(group);rng=np.random.default_rng(94)
@@ -33,10 +34,12 @@ def evaluate(root):
     d=load(root);validation=json.loads((out/'validation_results.json').read_text())
     test=(d['split']=='test')&(d['mask']==31)
     x=d['X'][test];yb=d['yb'][test];yc=d['yc'][test];cond=d['condition'][test];groups=d['group'][test]
-    results={};predictions={}
+    results={};predictions={};gate_results={}
     for entry in validation['runs']:
         name=entry['name']
         model,_=load_model(root/f'artifacts/{name}.npz');b,c=predict_logits(model,x);pb=probabilities(b);pc=probabilities(c)
+        if model.config.learned_physics_gate:
+            gate_results[name]=analyze_gates(model,x,yb,yc,cond,groups)
         predictions[name]=(pb,pc)
         results[name]={s:score(yb[cond==s],yc[cond==s],pb[cond==s],pc[cond==s]) for s in np.unique(cond)}
     rb,rc=physics_logits(x);predictions['electrical_rules']=(probabilities(rb),probabilities(rc))
@@ -47,8 +50,8 @@ def evaluate(root):
     base_correct=((baseb.argmax(1)==yb)&(basec.argmax(1)==yc)).astype(float)
     mask=cond=='noise20'
     comparison=group_bootstrap_difference(groups[mask],correct[mask],base_correct[mask])
-    names=['baseline_robust_11','features_only_11',selected,'electrical_rules']
-    names=list(dict.fromkeys(names))
+    names=['baseline_robust_11','features_only_11','physics_enhanced_11','physics_gated_11',selected,'electrical_rules']
+    names=[n for n in dict.fromkeys(names) if n in predictions]
     panel_correct={n:((predictions[n][0].argmax(1)==yb)&(predictions[n][1].argmax(1)==yc)).astype(float)[mask] for n in names}
     statistics=panels_analysis(groups[mask],yc[mask],panel_correct)
     predictor=Predictor(root);cal=predictor.calibration
@@ -66,12 +69,13 @@ def evaluate(root):
     np.savez_compressed(out/'heldout_predictions.npz',yb=yb,yc=yc,groups=groups,conditions=cond,
                         pb=calibrated_b,pc=calibrated_c,baseline_pb=baseb,baseline_pc=basec)
     seed_summary={}
-    for family in ['baseline_robust','physics_enhanced']:
+    for family in dict.fromkeys(r['variant'] for r in validation['runs']):
         entries=[r for r in validation['runs'] if r['variant']==family]
         seed_summary[family]={condition:{'mean':float(np.mean([results[r['name']][condition]['joint_accuracy'] for r in entries])),
                                         'sample_sd':float(np.std([results[r['name']][condition]['joint_accuracy'] for r in entries],ddof=1)) if len(entries)>1 else None,
                                         'seeds':[r['seed'] for r in entries]}
                               for condition in np.unique(cond)}
+    if gate_results:save_json(out/'gate_counterfactual.json',gate_results)
     save_json(out/'test_results.json',{'selected_neural':selected,'conditions':results,'comparison_at_20dB':comparison,
              'implementation':'manual_numpy','training_seed_summary':seed_summary,'probability_metrics':probability_results,'continuous_estimation':regression,'statistics':statistics,
              'scope':'held-out configurations from the same ideal controlled-source generator; not appliance or hardware validation'})
@@ -90,7 +94,7 @@ def evaluate(root):
     return results
 
 def plot_results(results,selected,fig):
-    names=['baseline_clean_11','baseline_robust_11','features_only_11',selected,'electrical_rules'];names=list(dict.fromkeys(names))
+    names=['baseline_clean_11','baseline_robust_11','features_only_11','physics_enhanced_11','physics_gated_11',selected,'electrical_rules'];names=[n for n in dict.fromkeys(names) if n in results]
     conditions=['clean','noise20','sensor_shift','frequency_shift','coloured10']
     ax=plt.figure(figsize=(10,5)).subplots()
     for n in names:ax.plot(conditions,[results[n][s]['joint_accuracy'] for s in conditions],marker='o',label=n)
@@ -170,8 +174,8 @@ def write_summary(root,results,selected,comparison,policy,latency):
     for p,r in policy['noise20'].items():lines.append(f"| {p} | {r['mean_probes']:.2f} | {r['coverage']:.2%} | {r['accepted_joint_accuracy']:.2%} |" if r['accepted_joint_accuracy'] is not None else f"| {p} | {r['mean_probes']:.2f} | 0% | undefined |")
     lines+=['',f"Feature + model compute p95: {latency['feature_plus_model_ms']['p95']:.2f} ms on the local CPU, excluding acquisition and UI.",
             '', '## Interpretation','',
-            'Use the noise-trained baseline for the fair main comparison. The clean-only run underfit (33.3% clean joint accuracy); it is not evidence for enhancement superiority. Its checkpoint was selected against noisy validation cases. The noise-trained baseline is the valid main comparator. The features-only and selected physics model tie at 20 dB in this run; a separate benefit from the penalty alone has not been established. Analytical electrical rules may match or beat a neural variant; report that honestly. All classifiers, optimizers, features and metrics in this run use explicit NumPy algorithms.',
-            '', 'The noise-trained baseline and enhanced model each use three training seeds. The clean-only and features-only ablations use one seed. Test confidence intervals resample physical branches, not windows. Ten simulator device panels support a supplemental ANOVA/Friedman analysis; they are not real laboratories.',
+            'All compared neural families use explicit NumPy training. Use the noise-trained baseline, matched development augmentation and the same validation-search budget for comparisons. Inspect the features-only, fixed-physics and learned-gate ablations before crediting an individual component. The selected checkpoint is chosen on validation, not by the best test seed.',
+            '', 'Seed means and standard deviations, physical-device bootstrap intervals and panel tests are exported in test_results.json. The gate_counterfactual.json file, when present, tests the learned gates against constant half-valued gates with identical frozen neural weights. Some differences may be inconclusive. Test accuracy and accepted-set accuracy are distinct quantities.',
             '', 'The input-quality guard and calibration-by-budget were fitted on calibration devices before this test. A fresh independent configuration pool checks the frozen classifier and guard in fresh_confirmation.json. Low coverage/rejection is not increased classification accuracy.',
             '', 'Independent ngspice verification, broader controller families, real datasets with verified dual labels, hardware, and external generalisation remain open validation work. See all JSON/NPZ exports for exact values and failure cases.']
     (root/'reports/RESULTS.md').write_text('\n'.join(lines)+'\n')
