@@ -18,10 +18,10 @@ def split_indices(n,rng):
     return {int(i):part for part,ids in [('train',perm[:a]),('validation',perm[a:b]),('calibration',perm[b:c]),('test',perm[c:])] for i in ids}
 
 def generate(root,configurations=100,seed=20261020):
-    root=Path(root);out=root/'data';out.mkdir(exist_ok=True)
+    root=Path(root);out=root/'data';out.mkdir(parents=True,exist_ok=True)
     rng=np.random.default_rng(seed)
     rows=[];yb=[];yc=[];groups=[];parts=[];conditions=[];masks=[]
-    manifest=[];example_ids=[]
+    manifest=[];example_ids=[];episode_seeds=[]
     started=time.perf_counter()
     for ci,composition in enumerate(COMPOSITIONS):
         splits=split_indices(configurations,rng)
@@ -29,7 +29,8 @@ def generate(root,configurations=100,seed=20261020):
             circuit=sample_circuit(composition,index,rng)
             group=len(manifest)
             entry=circuit.to_dict();entry['split']=splits[index]
-            entry['parameter_hash']=hashlib.sha256(json.dumps(circuit.to_dict(),sort_keys=True).encode()).hexdigest()
+            physical={k:entry[k] for k in ['resistance','inductance','capacitance','parasitic_resistance']}
+            entry['parameter_hash']=hashlib.sha256(json.dumps(physical,sort_keys=True).encode()).hexdigest()
             manifest.append(entry)
             _,sv,si=transient(circuit,duration=.3,sample_rate=5000)
             startup=np.stack([sv,si])*np.sqrt(2)
@@ -41,6 +42,7 @@ def generate(root,configurations=100,seed=20261020):
                     if entry['split'] in ['train','validation','calibration'] and condition not in ['clean','noise30','noise20']:continue
                     sim_seed=int(rng.integers(0,2**31))
                     waves,fs=episode(circuit,behaviour,sim_seed,snr,corruption)
+                    episode_seeds.append({'group':group,'behaviour':bi,'condition':condition,'wave_seed':sim_seed,'startup_rng_state':rng.bit_generator.state.copy()})
                     noisy_start=corrupt(mode_startup,rng,snr,corruption)
                     # A variety of legal acquisition masks, all within this parent group.
                     order=[0,1,2,3,4]
@@ -59,7 +61,7 @@ def generate(root,configurations=100,seed=20261020):
     np.savez_compressed(out/'benchmark.npz',X=np.asarray(rows,dtype=np.float32),yb=np.asarray(yb),yc=np.asarray(yc),
                         group=np.asarray(groups),split=np.asarray(parts),condition=np.asarray(conditions),mask=np.asarray(masks))
     save_json(out/'manifest.json',{'seed':seed,'configurations_per_topology':configurations,'feature_names':FEATURE_NAMES,
-              'groups':manifest,'examples':example_ids,'supported_pairs':SUPPORT,'conditions':CONDITIONS,
+              'groups':manifest,'episodes':episode_seeds,'implementation':'manual_numpy','examples':example_ids,'supported_pairs':SUPPORT,'conditions':CONDITIONS,
               'generation_seconds':time.perf_counter()-started,'label_contract':'docs/LABEL_CONTRACT.md'})
     print(f'Generated {len(manifest)} physical configurations, {len(rows)} feature records in {time.perf_counter()-started:.1f}s',flush=True)
     return audit_splits(root)
