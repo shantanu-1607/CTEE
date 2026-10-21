@@ -41,7 +41,7 @@ def _train(d,run,training,seed,epochs=None):
     return model,history,{'validation':metrics,'validation_by_condition':by_condition,
         'balanced_validation_joint':balanced,'composition_nll':nll,'training_rows':len(train.x),
         'parameters':sum(p.size for p in model.params.values()),'config':asdict(config),
-        'best_epoch':history['best_epoch'],'implementation':'manual_numpy'}
+        'best_epoch':history['best_epoch'],'weight_source':history.get('weight_source','raw'),'implementation':'manual_numpy'}
 
 
 def _rank(entry):
@@ -93,7 +93,9 @@ def train_research(root,cfg,config_path,epochs=None):
             'parameter_learning':histories[selected['name']]['parameter_learning'],
             'gate_feature_names':[FEATURE_NAMES[i] for i in model.config.gate_feature_indices],
             'optimizer_steps':histories[selected['name']]['optimizer_steps'],
-            'best_epoch':histories[selected['name']]['best_epoch']})
+            'best_epoch':histories[selected['name']]['best_epoch'],
+            'weight_source':histories[selected['name']].get('weight_source','raw'),
+            'ema_decay':histories[selected['name']].get('ema_decay')})
     save_json(art/'artifact_contract.json',{'feature_names':FEATURE_NAMES,'implementation':'manual_numpy',
             'experiment_config':cfg,'config_sha256':hashlib.sha256(Path(config_path).read_bytes()).hexdigest(),
             'dataset_sha256':hashlib.sha256((root/'data/benchmark.npz').read_bytes()).hexdigest(),

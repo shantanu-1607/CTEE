@@ -28,6 +28,6 @@ def main():
         if a.phase in ['evaluate','all']:
             from .evaluate import evaluate;evaluate(a.root)
         if a.phase in ['confirm','all']:
-            from .confirm import confirm;confirm(a.root,seed=cfg['data_seed']+1)
+            from .confirm import confirm;confirm(a.root,per_topology=cfg.get('confirmation_per_topology',20),seed=cfg['data_seed']+1)
 
 if __name__=='__main__':main()
