@@ -25,7 +25,9 @@ class Predictor:
         if not evidence['spectral_valid']:reasons.append('Need stronger frequency/harmonic excitation')
         if evidence['spectral_fit_error']>=.2:reasons.append('Measured impedance poorly fits the declared series family')
         if confidence<cal['threshold']:reasons.append('Confidence is below the calibration threshold')
-        return {'behaviour_probabilities':pb.tolist(),'composition_probabilities':pc.tolist(),
+        gates=self.model.physics_gate_values(np.atleast_2d(x)[:,:self.model.config.input_dim])
+        return {'physics_gates':{k:float(v[0]) for k,v in gates.items()},'features':np.asarray(x).tolist(),
+                'behaviour_probabilities':pb.tolist(),'composition_probabilities':pc.tolist(),
                 'behaviour':int(pb.argmax()),'composition':int(pc.argmax()),'confidence':confidence,
                 'accepted':not reasons,'reasons':reasons,'evidence':evidence}
 
