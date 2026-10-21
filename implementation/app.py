@@ -1,4 +1,4 @@
-"""Local demonstration; run with .venv/bin/python -m streamlit run app.py."""
+"""Local demonstration; run with .venv_numpy/bin/python -m streamlit run app.py."""
 from pathlib import Path
 import json,time
 import numpy as np
@@ -26,7 +26,7 @@ st.info('Research prototype: an ideal controlled-source simulator with a known s
 def predictor(revision):return Predictor(RUN_ROOT)
 
 if not (RUN_ROOT/'artifacts/selected_model.npz').exists():
-    st.warning('Train the model first: `.venv/bin/python -m ctee train`')
+    st.warning('Train the model first: `.venv_numpy/bin/python -m ctee train`')
     st.stop()
 
 pred=predictor((RUN_ROOT/'artifacts/selected_model.npz').stat().st_mtime_ns)
@@ -71,7 +71,7 @@ def show_prediction(result,waves,frequencies,truth=None,allow_export=True,sample
     if truth is not None and st.checkbox('Reveal simulator ground truth'):
         st.write(f"True labels: **{truth[0]} / {truth[1]}**. "+('Both predictions match.' if (BEHAVIOURS[decision['behaviour']],COMPOSITIONS[decision['composition']])==truth else 'At least one prediction is incorrect.'))
     if allow_export:
-        st.download_button('Download measured CSV',export_csv(waves,frequencies,sample_rate=sample_rate),'ctee_measurements.csv','text/csv')
+        st.download_button('Download measured CSV',export_csv(waves,frequencies,selected=selected,sample_rate=sample_rate),'ctee_measurements.csv','text/csv')
 
 with demo:
     source=st.radio('Input source',['New simulated fixture','Held-out benchmark example','Measured CSV'],horizontal=True)
