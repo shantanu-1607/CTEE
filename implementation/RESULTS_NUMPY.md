@@ -1,84 +1,106 @@
-# NumPy experiment results — frozen run v1
+# Current NumPy results — learned weights and physics gates
 
-Measured 22 October 2026. These scores belong to the manual NumPy implementation, not the earlier framework prototype. Both heads must be correct for **joint accuracy**.
+Measured 22 October 2026. Current run: **numpy_v3**; deployed checkpoint **physics_gated_33**. The old report is preserved in `docs/RESULTS_NUMPY_V1.md`. Do not compare percentages across different circuit pools as if they were paired measurements.
 
-## Dataset and protocol
+## The actual ML parameters
 
-- 700 physical configurations: 100 per composition. Split by parent circuit: 420 train, 105 validation, 70 calibration, 105 test. Modes, noisy copies, and partial-probe records stay with their parent circuit.
-- 31,050 feature records are derived observations, not 31,050 independent devices. Each test condition contains 270 supported behaviour/composition episodes.
-- 18 supported pairs under the series-branch controlled-source contract; CP with pure L/C/LC is excluded. This is an ideal simulator, not arbitrary appliance identification.
-- Frozen experiment settings: `configs/experiments.json`, data seed 20261022. Three training seeds each for the robust baseline and enhanced model: 11, 22, 33.
-- Checkpoints selected by validation loss. The deployed variant was selected on validation joint accuracy and composition macro-F1, before final testing. Temperatures, per-budget acceptance thresholds and SNR guard use calibration devices only.
-- Selected model: **physics_enhanced_11**, 16,074 trainable parameters, shared 95→96→64 encoder and separate 3/7-class heads. Baselines have 70 ordinary features; all use the same hidden widths and noise-training budget.
+The model has **25,668 trainable weights/biases**, including 26 values in two quality-conditioned sigmoid gates. Training changed **25,666** values by more than 1e-12. The two unchanged gate entries correspond to the always-present nominal-probe indicator, which becomes zero after standardization; this is an expected constant-input effect.
 
-## Held-out classification results
+All parameters are explicit NumPy arrays. Manual backpropagation, Adam updates and EMA modify actual model weights. The selected checkpoint uses **ema weights from epoch 50**, after a run with 9,144 optimizer steps and restoration of the best validation checkpoint. The dashboard's **Weights and learning** tab exposes arrays, changes from initialization, gradient/update traces, a complete CSV download and isolated single-weight edits.
 
-| Model | Clean | White noise 20 dB | Sensor shift | Frequency shift | Coloured noise 10 dB |
+## Protocol
+
+- 700 new physical circuits: 420 train, 105 validation, 70 calibration, 105 test. Data seed 20261024. The fresh split was not used in the earlier v1 experiment.
+- 31,050 original derived records. Domain randomization adds 16,200 training records and 4,050 validation records; these remain copies of their original physical groups, not new independent circuits.
+- Randomization uses shared per-episode voltage/current gain errors, fractional channel delay, noise from 12–35 dB and AR(1) coefficient 0–0.85. All neural families receive the same records, including the robust baseline.
+- Four families, three candidate hyperparameter settings each. Candidate selection uses condition-balanced validation joint accuracy, with composition macro-F1 and NLL for ties. The chosen setting for each family is run with seeds 11/22/33. Early stopping/checkpoint choice uses validation loss.
+- A validation-only pilot without EMA is archived under `runs/numpy_v2/`. The matched follow-up uses EMA decay 0.995 for every family, selecting raw or averaged weights by validation loss. Test results were not used to make this change.
+- Classifier, gates, features and calibration were frozen before testing. A separate pool of **700 additional physical circuits**, seed 20261025, provides 1,800 episodes per condition for confirmation.
+- This remains the declared ideal controlled-source series-branch family with 18 supported label pairs. It is not a real-appliance or hardware benchmark.
+
+## Held-out joint accuracy
+
+Both labels must be correct. There are 270 supported episodes per test condition.
+
+| Model | Clean | 20 dB white | Sensor shift | Frequency shift | 10 dB coloured |
 |---|---:|---:|---:|---:|---:|
-| baseline_robust_11 | 98.89% | 93.33% | 59.63% | 88.15% | 46.30% |
-| features_only_11 | 100.00% | 96.67% | 63.33% | 94.44% | 44.44% |
-| physics_enhanced_11 | 100.00% | 96.67% | 72.96% | 94.07% | 55.93% |
-| electrical_rules | 100.00% | 77.04% | 39.26% | 71.85% | 37.78% |
+| baseline_robust_11 | 98.15% | 97.78% | 96.67% | 97.04% | 78.15% |
+| features_only_11 | 100.00% | 99.63% | 97.04% | 97.78% | 77.78% |
+| physics_enhanced_11 | 99.26% | 98.52% | 94.44% | 98.89% | 81.48% |
+| physics_gated_11 | 99.26% | 99.63% | 96.67% | 98.15% | 87.41% |
+| physics_gated_33 | 100.00% | 99.26% | 94.81% | 98.15% | 80.00% |
+| electrical_rules | 100.00% | 80.37% | 46.67% | 79.26% | 44.44% |
 
-Sensor shift includes voltage/current gain error and one-sample channel misalignment, alongside 20 dB noise. Frequency shift changes all probe source frequencies by 20%, alongside 20 dB noise. The severe coloured-noise condition is outside the training noise range.
+The deployed model was chosen by validation; it is not the best test seed on every condition. Its two 20 dB errors are RL→RLC and RLC→RL. Behaviour macro-F1 is 1.0000 and composition macro-F1 is 0.99365.
 
-Across all three training seeds (mean ± sample standard deviation in percentage points):
+Across three training seeds (mean ± sample standard deviation in percentage points):
 
-| Family | Clean | White noise 20 dB | Sensor shift | Frequency shift |
-|---|---:|---:|---:|---:|
-| baseline_robust | 99.01 ± 0.21 | 94.57 ± 1.13 | 59.38 ± 10.74 | 88.52 ± 1.34 |
-| physics_enhanced | 100.00 ± 0.00 | 96.91 ± 1.13 | 70.00 ± 3.92 | 94.32 ± 0.77 |
+| Family | Clean | 20 dB white | Sensor shift | Frequency shift | 10 dB coloured |
+|---|---:|---:|---:|---:|---:|
+| baseline_robust | 98.52 ± 0.37 | 97.78 ± 0.37 | 96.42 ± 0.77 | 96.67 ± 0.98 | 76.30 ± 3.53 |
+| features_only | 99.63 ± 0.64 | 98.77 ± 0.93 | 95.80 ± 1.13 | 98.02 ± 0.43 | 79.14 ± 1.30 |
+| physics_enhanced | 99.63 ± 0.37 | 98.64 ± 0.21 | 94.07 ± 0.37 | 98.40 ± 0.57 | 80.62 ± 2.88 |
+| physics_gated | 99.75 ± 0.43 | 99.38 ± 0.21 | 95.56 ± 0.98 | 98.02 ± 0.21 | 82.96 ± 3.92 |
 
-The selected model's 20 dB behaviour macro-F1 is 1.0000 and composition macro-F1 is 0.9682. The nine joint errors are composition errors: RL→RLC (2), LC→L (2), RLC→RL (5). Features-only and the selected physics variant tie at 96.67% joint accuracy at 20 dB. The combined prior/penalty improves some stress conditions, but this experiment does not isolate a penalty-only benefit.
+The gated family has the highest three-seed mean for 20 dB and coloured noise. The ordinary baseline is stronger on the sensor-shift test. This is evidence of a tradeoff, not universal dominance.
 
-The clean-only ablation underfit (33.33% clean joint accuracy). Its best epoch was 1 under noisy validation-loss selection. Do not use this unsuccessful run as the main evidence of improvement.
+## Do the learned gates do anything?
 
-## Statistical evidence and its limits
+Replace only the gate logits with zeros, forcing gate=0.5; retain exactly the same trained neural weights. This frozen-weight counterfactual is different from training a fixed-prior model from scratch.
 
-The selected model improves episode-pooled 20 dB accuracy by **3.33 percentage points** over baseline seed 11. Averaging each physical branch's supported modes first gives **4.29 points**, bootstrap 95% CI **[0.95, 7.94] points**, paired group sign-permutation p=0.0234 over 105 branches.
+| Condition | Learned gates | Same weights, gate=0.5 |
+|---|---:|---:|
+| clean | 100.00% | 99.26% |
+| coloured10 | 80.00% | 75.56% |
+| frequency_shift | 98.15% | 97.04% |
+| noise20 | 99.26% | 98.15% |
+| noise30 | 100.00% | 99.63% |
+| sensor_shift | 94.81% | 95.56% |
 
-A supplemental ten-panel repeated-measures ANOVA gives GG-corrected p=1.24e-8; Friedman p=3.99e-5 across four models including electrical rules. However, the baseline–selected-model panel Wilcoxon comparison is **not significant after Holm correction (p=0.625)**. These tests use different units and hypotheses. Do not claim that the omnibus ANOVA proves the enhanced neural model beats every comparator.
-
-## Confidence and measurement cost
-
-| Policy, 20 dB | Mean probes | Coverage | Joint accuracy among accepted |
-|---|---:|---:|---:|
-| fixed | 4.219 | 78.15% | 97.63% |
-| random | 4.122 | 78.15% | 97.16% |
-| adaptive | 3.437 | 78.15% | 98.10% |
-
-Adaptive acquisition reduces mean probes by **18.5%** versus the fixed order in matched episodes. Its budget-three joint accuracy is 96.67%, compared with fixed-order 85.56%. The policy is deterministic and evidence-guided; no reinforcement learner or information-gain optimality is claimed. Operational inference stops at acceptance; only offline diagnostic traces continue to draw equal-budget curves.
-
-All severe coloured-noise recordings are rejected by the calibrated quality guard (zero coverage). The raw classifier still gets only 55.93% correct on that test condition. Rejection is a useful reliability mechanism, not an accuracy of 100%.
-
-At 20 dB, composition NLL changes from 0.11677 to 0.09870 after calibration, Brier score from 0.04729 to 0.04684, and ten-bin ECE from 0.01580 to 0.01300. Temperature scaling does not change the argmax labels. AUC and Brier skill scores for both heads are in the JSON report. Regression metrics apply to measured voltage-response slope, never to integer class codes; MAPE is omitted because the CC slope is zero.
+Mean composition-gate value decreases from **0.850 on clean recordings to 0.547 under severe coloured noise**. Thus the fitted model adjusts its trust in physical evidence using measured quality. These gate values are not calibrated probabilities that physics is correct. The counterfactual improves several conditions but hurts sensor-shift accuracy; it does not isolate conditional gating from every possible global learned prior scale.
 
 ## Fresh independent confirmation
 
-A frozen model and thresholds were also tested on **140 new configurations**, 360 supported episodes per condition, seed 20261023. No settings were tuned on this pool.
+The model was not changed after the held-out test. Each condition below has 1,800 episodes from 700 new physical configurations.
 
-| Condition | Enhanced joint | Baseline joint | Coverage | Accepted joint |
+| Condition | Selected model | Baseline seed 11 | Coverage | Accepted joint accuracy |
 |---|---:|---:|---:|---:|
-| clean | 100.00% | 98.89% | 100.00% | 100.00% |
-| noise20 | 99.17% | 97.50% | 84.17% | 99.34% |
-| coloured10 | 60.28% | 53.61% | 0.00% | undefined |
+| clean | 100.00% | 99.06% | 100.00% | 100.00% |
+| noise20 | 97.89% | 97.78% | 83.56% | 98.87% |
+| coloured10 | 79.00% | 76.83% | 0.00% | undefined |
 
-The fresh-pool improvement is encouraging but its device-level confidence interval includes zero. This remains validation within one simulator family.
+The large confirmation pool gives a more conservative 20 dB result than the smaller test set. Its 20 dB improvement is **not statistically established**: physical-device-average gain 0.238 percentage points, 95% bootstrap CI [−0.619, 1.071], sign-permutation p=0.597. Clean and coloured-noise comparisons are favourable, but those individual p-values are exploratory, unadjusted for these multiple conditions.
 
-## Reproducibility and implementation checks
+On the original test split, the selected-model 20 dB device-average gain is 1.905 points, CI [−0.317, 4.603], also including zero. The omnibus GG-ANOVA/Friedman tests across neural variants and electrical rules are significant; neural pairwise panel tests are not significant after Holm adjustment. Do not use the omnibus result to claim the novel model beats all alternatives.
 
-- 64 tests passed in a clean Python 3.12 environment. PyTorch, SciPy, scikit-learn and joblib are not installed in that environment.
-- Tests include all-parameter finite-difference gradients, independent direct DFT comparisons, optimizer updates by hand, Kirchhoff residuals, time-step convergence, group separation, checkpoint equivalence, CSV roundtrips, causal probe access, abstention, and dashboard classification.
-- Physics audit passes all 18 supported pairs. Maximum measured voltage-slope error is 1.79e-7; regulation relative error is 7.61e-8. These checks do not replace an independent simulator/hardware test.
-- Local CPU feature-plus-model p95: 1.03 ms, 100 repetitions; excludes recording, settling, actuation, UI and network. This is a local benchmark, not a hardware deadline guarantee.
-- Dataset SHA-256: `8a41e5c9f50efc9e8c5457c87fde169e0cea6baf710a5f8f84696d7a02adcb34`.
-- Experiment configuration SHA-256: `e8f25ebc055ee06bf9f934aedc7eb5d9e7da1983bb3954e00837c399bf79596c`.
-- Selected checkpoint SHA-256: `28a60c15d0d44159e42743a56b33240f2c78c78006707e20c649387bad0e8ea0`.
+## Acquisition and confidence limitations
 
-Generated arrays, checkpoints, raw predictions, calibration, plots and complete reports live in ignored `runs/numpy_v1/`. Reproduce them with `Run_All_Phases.command`. Historical framework results under the old root `reports/` are retained as history and are not loaded by the current dashboard.
+**Full measurement is the dashboard default**, using all five probes and the headline classifier. Adaptive mode is available as an explicit accuracy/cost tradeoff:
 
-## Defensible contribution
+| Policy at 20 dB | Mean probes | Coverage | Accepted joint accuracy |
+|---|---:|---:|---:|
+| fixed | 4.193 | 80.74% | 98.62% |
+| random | 4.144 | 80.74% | 98.62% |
+| adaptive | 3.385 | 80.74% | 96.33% |
 
-The proposed project contribution is the evaluated combination of voltage-response/spectral/startup fingerprints, a shared two-head model with electrical priors and a masked consistency loss, calibrated abstention, and causal adaptive measurement. Implementing these algorithms manually makes their parameters inspectable; manual implementation alone is not scientific novelty.
+Adaptive saves about 19.3% of probes versus the confidence-stopped fixed order, but its accepted accuracy is lower. This run does **not** demonstrate equal-accuracy acquisition savings. Offline diagnostic traces continue after the actual stop only to compare observation budgets; operational inference stops without reading future probes.
 
-Real hardware, independent ngspice validation, converter dynamics, arbitrary topologies and real-appliance dual labels remain outside the validated scope. Supplied-paper appliance scores cannot be compared numerically with this different benchmark. No worldwide novelty, global-best classifier, or guaranteed grade is claimed.
+The SNR gate rejects all 10 dB coloured-noise cases. Their raw classifier accuracy remains 80% on the main test and 79% on confirmation. Zero coverage is rejection, not 100% accuracy.
+
+Temperature scaling improved its calibration objective but **worsened test composition NLL** from 0.02487 to 0.09012 and Brier from 0.01432 to 0.01501. A confidence-calibration benefit is not established for this run. This does not change argmax classification accuracy. Report the before/after confidence metrics rather than assuming scaling always helps.
+
+## Verification and reproduction
+
+- **78 tests passed** in a clean Python 3.12 environment without PyTorch, SciPy, scikit-learn or joblib.
+- Tests verify every parameter's analytical gradient, including learned gates; actual parameter updates and EMA by hand; shared-task gradient addition; checkpoint equivalence; source restrictions; no test leakage in search; causal acquisition; CSV; circuit equations; and interactive parameter edits.
+- Feature-plus-model local CPU p95: **1.03 ms**, excluding recording, settling, actuation and UI.
+- The electrical audit covers all 18 supported pairs. Independent ngspice/hardware validation is not performed.
+- Dataset SHA-256: `f6bd4f661c1dfd6f2564c82e2b38a6c116ef2ea23202ecbd1098761089b4e256`.
+- Configuration SHA-256: `19054159f6a15e0e946f4e7731cc2ec28636cfd281b3e14b1ecba59ed90d8e34`.
+- Selected checkpoint SHA-256: `7bdfee795245ed1a78b62edea4a6314f22b8f9fbb84fd759cd8bfc9cef0671f7`.
+
+Source/configuration and the compact JSON result record are committed. Full training histories, augmentation provenance, weights, raw predictions, plots and reports are in ignored `runs/numpy_v3/`. Run `Run_All_Phases.command` to reproduce with the pinned dependencies. The v1/v2 runs remain separate history.
+
+## Contribution statement
+
+The proposed contribution is measured-quality-conditioned learned electrical priors for this shared dual-target task, with manually differentiated gates, direct learned-weight inspection, robust training and causal measurement control. EMA/gating/calibration are established components and are credited in `docs/WEIGHTS_AND_NOVELTY.md`. The implementation is useful and the classifier is strong on its benchmark; worldwide uniqueness, global optimality, universal improvement and a particular grade remain unproven.
