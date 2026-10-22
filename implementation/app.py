@@ -20,7 +20,7 @@ st.markdown('''<style>.block-container{padding-top:2rem;max-width:1450px}h1{lett
 [data-testid="stMetric"]{border:1px solid #d9e6eb;border-radius:12px;padding:16px}
 </style>''',unsafe_allow_html=True)
 st.title('⚡ CTEE LoadLab')
-st.caption('Built from scratch with NumPy · One shared encoder · Two electrical answers')
+st.caption('Learned weights and physics trust · One shared encoder · Two electrical answers')
 st.info('Research prototype: an ideal controlled-source simulator with a known series RLC branch. Results describe this benchmark; they do not establish real-appliance or hardware accuracy.')
 
 @st.cache_resource
@@ -137,7 +137,7 @@ with method:
 The network, backpropagation, optimizers, Fourier analysis and metrics are written explicitly using NumPy. It shares one learned electrical representation between two output heads. One predicts CC/CP/CZ behaviour; the other predicts the known passive branch class.
 
 ### Proposed contribution
-Measured voltage-response and spectral fingerprints, valid electrical consistency, and uncertainty-guided acquisition are combined and compared with ordinary features, a noise-trained baseline, and analytical electrical rules. A new invention or a global best score is not established by a synthetic benchmark.
+Measured voltage-response and spectral fingerprints, quality-conditioned learned physics gates, averaged neural weights, valid electrical consistency, and uncertainty-guided acquisition are combined and compared with ordinary features, a noise-trained baseline, and analytical electrical rules. A new invention or a global best score is not established by a synthetic benchmark.
 
 ### Honest confidence
 An accepted result needs multiple voltage levels, useful spectral evidence, a reasonable circuit-family fit, sufficient measured signal quality, and the calibrated confidence threshold. The noise-quality guard uses calibration devices only. Temperatures and acceptance thresholds are calibrated separately for each observation count. Outside the declared family, a confident answer can be wrong.
@@ -165,7 +165,7 @@ with parameters:
     if learning_path.exists():
         learned=json.loads(learning_path.read_text())
         history=json.loads(history_path.read_text())[learned['selected_neural']]['history']
-        st.write(f"Training used **{learned['optimizer_steps']:,} optimizer steps**; selected epoch **{learned['best_epoch']}** by validation loss.")
+        st.write(f"Training used **{learned['optimizer_steps']:,} optimizer steps**; selected epoch **{learned['best_epoch']}** by validation loss; weight source **{learned.get('weight_source','raw')}**.")
         st.line_chart(pd.DataFrame(history).set_index('epoch')[['mean_gradient_norm','parameter_update_l2']])
         st.caption('Gradient norm measures the learning signal. Update norm measures the actual movement of all weights/biases in that epoch. Selected weights are restored from the best validation checkpoint.')
     st.subheader('Try changing one weight')
