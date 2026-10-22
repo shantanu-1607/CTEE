@@ -78,3 +78,7 @@ Independent circuit-simulator/hardware checks, realistic converter controllers, 
 “Yes. Every forward calculation, derivative, optimizer moment and update is in our own NumPy code. The selected model has 25,668 trainable values; 25,666 changed beyond 1e-12 during this run. Two gate coefficients multiply a constant standardized input and remain zero. I can download every initialized/learned value, inspect the gradient/update curves, or change one value in a sandbox and see its effect. Learning rates and widths are hyperparameters; the weight arrays themselves are the learned parameters.”
 
 The new quality-conditioned trust mechanism and its equations are explained in `WEIGHTS_AND_NOVELTY.md`. Learned gates and weight averaging have prior work, so describe our project-specific mechanism and experiments without claiming those general ideas were invented here.
+
+## The parameter inspector in the running dashboard
+
+![Learned-weight inspector](weights_inspector.png)
