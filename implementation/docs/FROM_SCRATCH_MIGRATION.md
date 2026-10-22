@@ -7,6 +7,8 @@ Requirement: NumPy is allowed; the learning algorithm must be inspectable and ad
 | Area | Implementation |
 |---|---|
 | Network | Shared arbitrary-width dense layers; 3/7 heads; manual forward pass and analytical backpropagation |
+| Learned evidence | Head-specific sigmoid gates conditioned only on measured quality/excitation, with manually differentiated weight/bias gradients |
+| Weight averaging | Optional explicit per-update EMA; raw/averaged checkpoint choice by validation loss |
 | Objective | Stable softmax/CE, task masks/weights, class weights, smoothing, optional L2, measured-slope Huber consistency |
 | Regularization | He/Xavier initialization; inverted dropout; train-only standardization and input clipping |
 | Optimizers | Adam moments/bias correction/decoupled decay; SGD/momentum/Nesterov; global gradient clipping |
@@ -23,7 +25,9 @@ The distribution-tail representations are documented in [NIST DLMF §8.17](https
 
 ## Verification and artifacts
 
-The clean `.venv_numpy/` environment contains none of torch, scipy, sklearn or joblib. All 64 tests pass there. The static restriction test scans every core source file, not only the standalone network. Full results, configuration hashes, seeds and scope are in `RESULTS_NUMPY.md`. Runtime artifacts are isolated in `runs/numpy_v1/`.
+The clean `.venv_numpy/` environment contains none of torch, scipy, sklearn or joblib. All 78 tests pass there. The static restriction test scans every core source file, not only the standalone network. Full results, configuration hashes, seeds and scope are in `RESULTS_NUMPY.md`. Runtime artifacts are isolated in `runs/numpy_v3/`.
+
+The new `ctee/parameters.py` inspector reconstructs initialization, exports every learned value, and previews edits on an independent copy. Epoch histories record gradient norms and actual parameter movements; selected-run metadata records which raw/EMA weights were restored.
 
 The checkpoint saves inference parameters/scaling, feature names, class order, architecture and training metadata. It does not preserve optimizer/RNG state for exact training resumption. The training budget is short enough to rerun experiments from the recorded seed/configuration.
 

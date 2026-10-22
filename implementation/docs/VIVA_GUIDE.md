@@ -4,7 +4,7 @@
 
 We give the computer recordings of voltage and current. It answers two questions together: **how does the load respond when voltage changes, and which resistance/inductance/capacitance branch does it resemble?** One shared neural network learns useful patterns, then two output heads give the two answers.
 
-Our enhancement adds electrical clues, checks confidence, and chooses another simulated measurement when the current evidence is insufficient. It can say **inconclusive** instead of confidently guessing. We wrote the calculations and learning steps ourselves with NumPy, so the parameters and equations are visible.
+Our enhancement adds electrical clues, checks confidence, and chooses another simulated measurement when the current evidence is insufficient. It can say **inconclusive** instead of confidently guessing. We wrote the calculations and learning steps ourselves with NumPy. The model has 25,668 trainable weights/biases, including gates that learn how much to trust electrical evidence. We can inspect every value and show how it changed during training.
 
 ## What CC, CP and CZ mean
 
@@ -30,7 +30,7 @@ There are 18 supported pairs: seven CC, seven CZ and four CP. CP requires R/RL/R
 4. Standardize using training records only. The shared encoder transforms the clues into a 64-number learned representation.
 5. One head outputs three behaviour scores; the other outputs seven composition scores. Softmax turns each head's scores into probabilities.
 6. During training, compare predictions with known simulator labels. Differentiate both losses by hand, add their gradients in the shared layers, and update weights with manual Adam.
-7. Add measured electrical priors and a masked slope-consistency term in the enhanced model. Only available measurements supply these terms.
+7. Add measured electrical priors, head-specific learned quality gates and a masked slope-consistency term. Optionally average recent trained weights and keep the best raw/averaged checkpoint by validation loss. Only available measurements supply these terms.
 8. Calibrate probabilities/thresholds on separate calibration circuits. Accept only if voltage span, spectral evidence, fit quality, signal quality and confidence pass.
 9. Request another simulated probe if needed, or stop and show the two tentative answers as inconclusive.
 
@@ -46,12 +46,14 @@ Do not claim that neural networks, Hilbert transforms, FFT, attention, physics l
 
 ## What did we achieve?
 
-- Selected-model held-out joint accuracy: **100% clean, 96.67% at 20 dB white noise**. Matching noise-trained baseline: **98.89%, 93.33%**.
-- Over three seeds, 20 dB enhanced-model mean: **96.91%**, baseline mean **94.57%**. This is more representative than cherry-picking the best test seed.
-- Fresh frozen-model confirmation on 140 additional circuits: **99.17% at 20 dB**, compared with baseline **97.50%**. This is still the same simulator family.
-- Adaptive acquisition uses **18.5% fewer probes** than fixed ordering in matched noisy episodes. Accepted-set accuracy is **98.10% at 78.15% coverage**. Coverage must accompany that accuracy.
-- Severe coloured noise still causes classification errors. The guard rejects those cases; that means zero coverage, not perfect classification.
-- All **64 tests pass** in an environment without PyTorch, SciPy, scikit-learn or joblib.
+- Validation-selected gated model, held-out joint accuracy: **100% clean, 99.26% at 20 dB white noise**. Matching baseline: **98.15%, 97.78%**.
+- Across three seeds, 20 dB gated-model mean: **99.38%**, baseline mean **97.78%**. The ordinary baseline is stronger under sensor shift; no model wins every condition.
+- Frozen-model confirmation on **700 new circuits / 1,800 episodes per condition**: **97.89% at 20 dB**, baseline **97.78%**. The difference is statistically inconclusive. Do not hide this larger-pool result behind the smaller test's 99.26%.
+- For the same frozen neural weights, learned gates give **99.26%** at 20 dB versus **98.15%** with gates fixed to 0.5. Under coloured noise, the comparison is **80.00% vs 75.56%**. Sensor shift is a counterexample where the learned gates hurt that control.
+- Mean composition physics trust falls from **0.850 clean to 0.547 in severe coloured noise**, learned from measured indicators rather than true component values.
+- Adaptive acquisition saves **19.3%** of probes versus fixed-order early stopping, but accepted accuracy falls from **98.62% to 96.33%**, at **80.74% coverage**. Full five-probe measurement is the default.
+- Severe coloured noise remains a failure condition. Its recordings are rejected; zero coverage is not perfect classification. Calibration worsens test composition NLL/Brier in this run; it is not claimed as a successful enhancement.
+- All **78 tests pass** in an environment without PyTorch, SciPy, scikit-learn or joblib.
 
 See `../RESULTS_NUMPY.md` for confidence intervals, failure classes and all comparison details.
 
@@ -61,12 +63,18 @@ F1 balances precision/recall for each class; macro-F1 averages classes equally. 
 
 MAE/MSE/RMSE/R²/RPD apply to a continuous quantity: here, the measured voltage-response slope versus its known theoretical value. Integer class labels have no meaningful numerical distance. MAPE is invalid for the zero CC slope. RMSE is not itself a universal proof of convergence; we inspect validation loss and restore its best checkpoint.
 
-ANOVA/Friedman compare several frozen models on disjoint device panels. A significant omnibus test means at least one model differs, not that our model beats all others. The enhanced-versus-baseline panel comparison is not significant after multiplicity correction. Device-level bootstrap evidence and panel tests differ in units; report both. The fresh confirmation interval includes zero, so a universal improvement is not established.
+ANOVA/Friedman compare several frozen models on disjoint device panels. A significant omnibus test means at least one model differs, not that our model beats all others. The enhanced-versus-baseline panel comparison is not significant after multiplicity correction. The 20 dB physical-device bootstrap intervals also include zero in both the main test and fresh pool. Report uncertainty; universal improvement is not established.
 
 ## How can I tinker with it?
 
-Change one parameter family at a time in `configs/experiments.json`, then use a new output folder. Useful controls are learning rate, widths, dropout, batch size, activation, initialization, optimizer moments, clipping, prior strength and consistency weight. Record validation performance, runtime and uncertainty as well as accuracy. Keep noise/measurement budgets equal across comparisons. Do not repeatedly choose settings based on the final test score.
+Change one hyperparameter family at a time in `configs/gated_experiments.json`, then use a new output folder. Useful controls are learning rate, widths, dropout, batch size, activation, initialization, optimizer moments, clipping, prior strength and consistency weight. Record validation performance, runtime and uncertainty as well as accuracy. Keep noise/measurement budgets equal across comparisons. Do not repeatedly choose settings based on the final test score.
 
 ## What remains for a stronger research project?
 
 Independent circuit-simulator/hardware checks, realistic converter controllers, wider operating ranges, real measurements with verified dual labels, stronger sensor-shift training, a penalty-only ablation and single-task comparators. If further improvements are developed after seeing these tests, use genuinely new final confirmation circuits. A high synthetic score alone cannot establish the world's best classifier or guarantee a grade.
+
+## The professor asks: “Do you control the weights or just library settings?”
+
+“Yes. Every forward calculation, derivative, optimizer moment and update is in our own NumPy code. The selected model has 25,668 trainable values; 25,666 changed beyond 1e-12 during this run. Two gate coefficients multiply a constant standardized input and remain zero. I can download every initialized/learned value, inspect the gradient/update curves, or change one value in a sandbox and see its effect. Learning rates and widths are hyperparameters; the weight arrays themselves are the learned parameters.”
+
+The new quality-conditioned trust mechanism and its equations are explained in `WEIGHTS_AND_NOVELTY.md`. Learned gates and weight averaging have prior work, so describe our project-specific mechanism and experiments without claiming those general ideas were invented here.
