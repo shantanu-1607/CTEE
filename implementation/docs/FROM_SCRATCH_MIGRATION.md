@@ -33,7 +33,7 @@ The checkpoint saves inference parameters/scaling, feature names, class order, a
 
 ## Scope changes from checkpoint 1 and the initial plan
 
-The old PyTorch/scikit-learn training, SciPy solver/NNLS/filter and library metrics are removed from the current executable path. The old random-forest comparator is retired; comparisons use manually trained baselines, a feature ablation, physics-enhanced models and analytical electrical rules. Separate single-task models, five-seed studies, AVME/Hilbert reproduction, parameter-search automation and independent ngspice/hardware validation are not implemented and are not claimed as completed.
+The old PyTorch/scikit-learn training, SciPy solver/NNLS/filter and library metrics are removed from the current executable path. The old random-forest comparator is retired; comparisons use manually trained baselines, a feature ablation, physics-enhanced models and analytical electrical rules. Matched validation-search automation, development-only waveform randomization, learnable quality gates, EMA and a full parameter lab are now implemented. Separate single-task models, five-seed studies, AVME/Hilbert reproduction and independent ngspice/hardware validation are not implemented and are not claimed as completed.
 
 The normal workflow does not load the legacy framework checkpoints or their published metrics. Historical files remain available for provenance. Current scores are new measurements of the NumPy pipeline. Some numerical routines intentionally target this small problem (three-component fits, exact signed-rank enumeration for at most twenty blocks); they are not general-purpose replacements for mature numerical libraries.
 

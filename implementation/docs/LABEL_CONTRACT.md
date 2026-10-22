@@ -34,3 +34,11 @@ Steady-state waveforms use the analytical impedance law. Startup uses a manually
 The main split measures independent, randomly sampled parameter configurations within this declared family; it is not a held-out parameter-range or converter-family test. Phase, excitation harmonics, and parameter provenance are stored, but hidden component values never enter features. Near-duplicate-distance blocking and external physical topology verification remain future work.
 
 The ordinary `sin_phase` feature is normalized fundamental reactive power: Q1/(|V1||I1|), where Q1=Im(V1·conj(I1)). `cos_phase` analogously represents normalized fundamental active power. The separate `true_pf` uses total measured active power and RMS values, including distortion. These quantities must not be confused.
+
+## Current learning protocol
+
+The learned physics gates use only probe availability, voltage-span/validity flags, spectral-fit quality, FFT noise descriptors and startup availability. Their weights/biases are learned jointly with the shared encoder and both heads. Their values represent evidence scaling, not a probability that a component is physically present. No hidden component truth enters the gates.
+
+Training/validation domain randomization uses shared per-episode channel gain errors within ±3%, fractional current timing error within one sample, 12–35 dB noise and AR(1) colour up to 0.85. This expands the development distribution without changing circuit labels; it does not make noisy copies independent devices. Calibration/test groups are excluded from this augmentation. The 10 dB coloured-noise test remains below the randomized noise range, and the deployed quality guard rejects it.
+
+The current dashboard defaults to all five observations. Adaptive stopping is an optional measured tradeoff, not a guarantee of full-measurement accuracy. Consult `../RESULTS_NUMPY.md` for current failed/inconclusive comparisons, especially calibration and sensor-shift behaviour.
