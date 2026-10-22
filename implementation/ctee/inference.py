@@ -55,20 +55,20 @@ def next_probe(selected,result):
 
 def trace_policy(predictor,waves,frequencies,startup=None,policy='adaptive',seed=0,diagnostic=False):
     """Stop operational acquisition; only offline diagnostics request future probes."""
-    if policy not in {'fixed','random','adaptive'}:raise ValueError('Unknown acquisition policy')
+    if policy not in {'full','fixed','random','adaptive'}:raise ValueError('Unknown acquisition policy')
     selected=[0];trace=[]
     rng=np.random.default_rng(seed)
-    order=[0,1,2,3,4] if policy=='fixed' else [0,*rng.permutation([1,2,3,4]).tolist()]
+    order=[0,1,2,3,4] if policy in {'fixed','full'} else [0,*rng.permutation([1,2,3,4]).tolist()]
     for _ in range(5):
         r=predictor.predict(waves,frequencies,selected,startup)
         r['selected']=selected.copy();r['budget']=len(selected)
         r['recording_seconds_lower_bound']=.3+len(selected)*DURATION
         trace.append(r)
-        stop=r['accepted'] or (policy=='adaptive' and not r.get('input_quality_passed',True))
+        stop=(r['accepted'] and policy!='full') or (policy=='adaptive' and not r.get('input_quality_passed',True))
         if len(selected)==5 or (stop and not diagnostic):break
         p=next_probe(selected,r) if policy=='adaptive' else order[len(selected)]
         selected.append(p)
-    accepted=next((r for r in trace if r['accepted']),trace[-1])
+    accepted=trace[-1] if policy=='full' else next((r for r in trace if r['accepted']),trace[-1])
     if policy=='adaptive' and not trace[0].get('input_quality_passed',True):
         # Continue computing diagnostic budget curves, but stop the actual acquisition.
         accepted=trace[0]

@@ -52,3 +52,10 @@ def test_runtime_rejects_signal_below_calibrated_range():
     result=predictor.predict(w,f,[0,1,3])
     assert not result['accepted'] and not result['input_quality_passed']
     assert any('cleaner signal' in reason for reason in result['reasons'])
+
+
+def test_full_measurement_returns_the_five_probe_decision():
+    predictor=ProbeRecorder()
+    result=trace_policy(predictor,None,None,policy='full')
+    assert len(predictor.calls)==5
+    assert result['decision']['budget']==5

@@ -86,7 +86,8 @@ with demo:
         behaviour=controls[1].selectbox('Controller mode',allowed,index=len(allowed)-1)
         snr=controls[2].selectbox('Measurement noise',['Clean','40 dB','30 dB','20 dB','10 dB'],index=3)
         seed=controls[3].number_input('Fixture seed',min_value=0,max_value=100000,value=73,step=1)
-        policy=st.selectbox('Measurement policy',['adaptive','fixed','random'])
+        policy=st.selectbox('Measurement policy',['full','adaptive','fixed','random'])
+        st.caption('Full uses all five probes for the main classifier result. Adaptive trades some accuracy for fewer measurements; fixed/random use confidence-based early stopping.')
         if st.button('Measure and classify',type='primary'):
             with threadpool_limits(limits=1):
                 c=sample_circuit(composition,int(seed),np.random.default_rng(int(seed)))
@@ -147,7 +148,7 @@ An accepted result needs multiple voltage levels, useful spectral evidence, a re
 
 with parameters:
     st.subheader('The ML parameters: actual weights and biases')
-    st.write('Every tensor below is learned by our own backpropagation and Adam/SGD updates. Initial values come from the recorded seed; the change columns show what training learned.')
+    st.write('Every tensor below is learned by our own backpropagation and Adam/SGD updates. Initial values come from the recorded seed; the change columns show what training learned. Constant inputs can legitimately produce zero updates for some values.')
     summary=parameter_summary(pred.model)
     st.write(f"**{sum(r['count'] for r in summary):,} trainable values** across {len(summary)} tensors. `W0`, `W1` belong to the shared encoder; head tensors belong to behaviour/composition; gate tensors learn when to trust physics evidence.")
     st.dataframe(pd.DataFrame(summary),hide_index=True,width='stretch')
