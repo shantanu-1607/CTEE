@@ -47,5 +47,7 @@ def confirm(root,per_topology=20,seed=20261023):
             'method':'Fresh independent simulator configurations. Classifier, feature schema and thresholds frozen before testing this fresh device pool; quality guard calibrated solely on original calibration devices.',
             'results':results,'devices':devices,'predictions':rows}
     save_json(root/'reports/fresh_confirmation.json',record)
+    from .evaluate import refresh_summary
+    refresh_summary(root)
     print('Fresh confirmation:',{c:{'joint':r['enhanced']['joint_accuracy'],'coverage':r['coverage'],'accepted_accuracy':r['accepted_joint_accuracy']} for c,r in results.items()})
     return record

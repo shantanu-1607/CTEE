@@ -178,4 +178,32 @@ def write_summary(root,results,selected,comparison,policy,latency):
             '', 'Seed means and standard deviations, physical-device bootstrap intervals and panel tests are exported in test_results.json. The gate_counterfactual.json file, when present, tests the learned gates against constant half-valued gates with identical frozen neural weights. Some differences may be inconclusive. Test accuracy and accepted-set accuracy are distinct quantities.',
             '', 'The input-quality guard and calibration-by-budget were fitted on calibration devices before this test. A fresh independent configuration pool checks the frozen classifier and guard in fresh_confirmation.json. Low coverage/rejection is not increased classification accuracy.',
             '', 'Independent ngspice verification, broader controller families, real datasets with verified dual labels, hardware, and external generalisation remain open validation work. See all JSON/NPZ exports for exact values and failure cases.']
+    report_path=root/'reports/test_results.json'
+    if report_path.exists():
+        report=json.loads(report_path.read_text())
+        metrics=report['probability_metrics']['noise20']
+        before=metrics['before']['composition']['nll'];after=metrics['after']['composition']['nll']
+        direction='worsened' if after>before else 'improved'
+        lines+=['','## Confidence check','',
+                f'Composition NLL at 20 dB {direction}: {before:.5f} before temperature scaling, {after:.5f} after. Calibration is fitted on separate devices and can fail to generalise; it does not change argmax accuracy.',
+                '', 'The adaptive policy can save measurements while losing accuracy. Full five-probe classification is the default. Compare accepted accuracy and coverage together.']
+    fresh_path=root/'reports/fresh_confirmation.json'
+    if fresh_path.exists():
+        fresh=json.loads(fresh_path.read_text())
+        lines+=['','## Frozen-model independent confirmation','',
+                f"{fresh['physical_configurations']} new simulator circuits; {fresh['episodes_per_condition']} supported episodes per condition.",'',
+                '| Condition | Selected joint | Baseline joint | Coverage |','|---|---:|---:|---:|']
+        for condition,value in fresh['results'].items():
+            lines.append(f"| {condition} | {value['enhanced']['joint_accuracy']:.2%} | {value['baseline']['joint_accuracy']:.2%} | {value['coverage']:.2%} |")
+        ci=fresh['results']['noise20']['group_comparison']['ci95']
+        lines+=['',f'Fresh 20 dB device-average improvement 95% CI: {ci}. An interval including zero does not establish a reliable improvement.']
     (root/'reports/RESULTS.md').write_text('\n'.join(lines)+'\n')
+
+
+def refresh_summary(root):
+    """Refresh presentation from saved results only; never refit or rescore a model."""
+    root=Path(root);out=root/'reports'
+    needed=['test_results.json','acquisition_results.json','latency.json']
+    if not all((out/name).exists() for name in needed):return
+    test=json.loads((out/needed[0]).read_text());policy=json.loads((out/needed[1]).read_text());latency=json.loads((out/needed[2]).read_text())
+    write_summary(root,test['conditions'],test['selected_neural'],test['comparison_at_20dB'],policy['results'],latency)
