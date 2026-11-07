@@ -1,0 +1,23 @@
+{
+  "tests": {
+    "command": "python -m pytest -q",
+    "passed": 20
+  },
+  "reproduction": {
+    "configuration": "Same baseline settings, split, environment and CPU thread limits",
+    "parameter_and_scaling_arrays_compared": 10,
+    "arrays_identical": true,
+    "history_identical": true,
+    "history_epochs": 228,
+    "selected_epoch": 203
+  },
+  "independent_prediction_recount": {
+    "test_rows": 2520,
+    "behaviour_correct": 2472,
+    "circuit_correct": 2438,
+    "both_correct": 2392,
+    "sample_ids_match_reserved_test_partition": true
+  },
+  "original_workbook_copy_identical": true,
+  "plots_visually_checked": true
+}

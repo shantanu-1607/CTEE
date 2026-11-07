@@ -1,0 +1,926 @@
+{
+  "workbook_sha256": "73d838cb216aa2c758582435775ed45c379329382cd24783a25d3df57b6f5e0b",
+  "rows": 16800,
+  "measurement_columns": 22,
+  "features": [
+    "Vrms",
+    "Irms",
+    "P",
+    "Q1",
+    "S",
+    "PF",
+    "phi_deg",
+    "Zmag",
+    "THD_V",
+    "THD_I",
+    "V_L0",
+    "I_L0",
+    "P_L0",
+    "V_L1",
+    "I_L1",
+    "P_L1",
+    "V_L3",
+    "I_L3",
+    "P_L3"
+  ],
+  "removed_duplicates": {
+    "V_L2": "Vrms",
+    "I_L2": "Irms",
+    "P_L2": "P"
+  },
+  "missing_cells": 0,
+  "duplicate_measurement_rows": 0,
+  "split_counts": {
+    "train": 11760,
+    "validation": 2520,
+    "test": 2520
+  },
+  "strata": [
+    {
+      "behaviour": "CC",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CC",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CP",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "C",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "C",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "L",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "L",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "LC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "LC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "R",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "R",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RL",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RL",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RLC",
+      "condition": "normal",
+      "split": "validation",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "test",
+      "rows": 60
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "train",
+      "rows": 280
+    },
+    {
+      "behaviour": "CZ",
+      "circuit": "RLC",
+      "condition": "tough",
+      "split": "validation",
+      "rows": 60
+    }
+  ],
+  "source": "Simulated labelled loads using load-profile values, as documented in Read me",
+  "independence_check": "Unique sample IDs and unique IITK timestamp/column pairs; no physical circuit IDs supplied",
+  "split_seed": 42,
+  "splits_sha256": "1b45f13bfc5b839254d904631d738ce4f360c0cafce28972539413352ef5df70"
+}
