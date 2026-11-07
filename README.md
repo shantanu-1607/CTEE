@@ -4,6 +4,11 @@ A supervised learning baseline for the supplied final dataset. One small neural
 network predicts both load behaviour (CC, CP, CZ) and circuit type
 (R, L, C, RL, RC, LC, RLC).
 
+On the 2,520 reserved test examples, the baseline scores **98.10% behaviour
+accuracy**, **96.75% circuit accuracy**, and **94.92% joint accuracy**
+(2,392 examples with both labels correct). Normal/tough joint accuracy is
+95.79% / 94.05%. These results apply to this workbook and fixed split.
+
 The model uses 19 distinct electrical measurements, two ReLU layers of 64 and
 32 neurons, and separate 3-class and 7-class outputs. The network, gradients and
 Adam updates are implemented with NumPy. Pandas and openpyxl read the workbook;
@@ -73,6 +78,10 @@ Per-head accuracy, macro-F1, per-class precision/recall/F1 and normal/tough resu
 are reported separately. See [the test report](runs/baseline/report.md) and
 [exact metrics](runs/baseline/metrics.json).
 
+Training completed 228 epochs and restored epoch 203 using validation loss.
+This is one training seed and one predeclared configuration, not a search for
+the best possible score. LC and RLC account for 68 of the 82 circuit mistakes.
+
 The workbook documents simulated labelled loads based on real load-profile
 values. CC/CP/CZ mean dominant ZIP behaviour. Unique IDs and source-reading keys
 are checked, but no physical circuit IDs or generator are supplied. These scores
@@ -98,6 +107,12 @@ network sizes and training settings. Put each run in a new folder and keep the
 same split. Repeat promising settings with several seeds. Other classifiers can
 then be compared under the same protocol. Do not choose settings using the test
 scores or expect every change to improve accuracy.
+
+Verification covers all parameter gradients against numerical finite differences,
+Adam arithmetic, stable losses, train-only scaling, saved-model predictions,
+early stopping and the fixed split. The test export was independently recounted.
+All 20 tests passed. A second run with the unchanged configuration reproduced
+every parameter/scaling array and all 228 history rows exactly on this machine.
 
 The earlier simulation research and planning documents remain in Git history.
 The current working tree contains only the supplied-dataset baseline.

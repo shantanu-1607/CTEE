@@ -1,0 +1,49 @@
+{
+  "best_epoch": 203,
+  "epochs_completed": 228,
+  "optimizer_updates": 20976,
+  "best_validation_loss": 0.18571510903622865,
+  "selection": "Lowest validation sum of behaviour and circuit cross-entropy, min_delta applied",
+  "config": {
+    "seed": 42,
+    "hidden_sizes": [
+      64,
+      32
+    ],
+    "learning_rate": 0.001,
+    "batch_size": 128,
+    "max_epochs": 250,
+    "patience": 25,
+    "min_delta": 1e-05,
+    "l2": 0.0001
+  },
+  "workbook_sha256": "73d838cb216aa2c758582435775ed45c379329382cd24783a25d3df57b6f5e0b",
+  "splits_sha256": "1b45f13bfc5b839254d904631d738ce4f360c0cafce28972539413352ef5df70",
+  "features": [
+    "Vrms",
+    "Irms",
+    "P",
+    "Q1",
+    "S",
+    "PF",
+    "phi_deg",
+    "Zmag",
+    "THD_V",
+    "THD_I",
+    "V_L0",
+    "I_L0",
+    "P_L0",
+    "V_L1",
+    "I_L1",
+    "P_L1",
+    "V_L3",
+    "I_L3",
+    "P_L3"
+  ],
+  "training_rows": 11760,
+  "validation_rows": 2520,
+  "parameter_count": 3690,
+  "training_seconds": 6.882799333994626,
+  "numpy_version": "2.3.5",
+  "checkpoint_sha256": "f283b5c11736e10093c4e17da3dd15e925caa908bdde47286ec4d3d2a215cbe3"
+}
