@@ -1,0 +1,10 @@
+{
+  "seed": 42,
+  "hidden_sizes": [64, 32],
+  "learning_rate": 0.001,
+  "batch_size": 128,
+  "max_epochs": 250,
+  "patience": 25,
+  "min_delta": 0.00001,
+  "l2": 0.0001
+}

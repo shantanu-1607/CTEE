@@ -1,0 +1,25 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "electrical-load-classifier"
+version = "0.1.0"
+description = "Two-head MLP baseline for electrical load classification"
+requires-python = ">=3.12"
+dependencies = [
+    "numpy>=2,<3",
+    "pandas>=2.2,<3",
+    "openpyxl>=3.1,<4",
+    "matplotlib>=3.9,<4",
+]
+
+[project.optional-dependencies]
+test = ["pytest>=8,<10"]
+
+[tool.setuptools.packages.find]
+include = ["load_classifier*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
