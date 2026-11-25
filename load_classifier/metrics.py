@@ -1,7 +1,7 @@
 """Recording-level metrics and uncertainty across held-out houses."""
 
 import numpy as np
-from sklearn.metrics import (accuracy_score, balanced_accuracy_score,
+from sklearn.metrics import (accuracy_score,
                              classification_report, confusion_matrix, f1_score)
 
 from .data import LABELS
@@ -15,14 +15,16 @@ def classification_scores(actual, predicted):
         raise ValueError("Unknown load label")
     report = classification_report(actual, predicted, labels=list(LABELS),
                                    output_dict=True, zero_division=0)
+    matrix = confusion_matrix(actual, predicted, labels=list(LABELS))
+    support = matrix.sum(axis=1)
     return {
         "recordings": len(actual), "correct": int(np.sum(actual == predicted)),
         "accuracy": float(accuracy_score(actual, predicted)),
-        "balanced_accuracy": float(balanced_accuracy_score(actual, predicted)),
+        "balanced_accuracy": float(np.mean(np.diag(matrix)[support > 0] / support[support > 0])),
         "macro_f1": float(f1_score(actual, predicted, labels=list(LABELS), average="macro", zero_division=0)),
         "weighted_f1": float(f1_score(actual, predicted, labels=list(LABELS), average="weighted", zero_division=0)),
         "per_class": {name: report[name] for name in LABELS},
-        "confusion_matrix": confusion_matrix(actual, predicted, labels=list(LABELS)).tolist(),
+        "confusion_matrix": matrix.tolist(),
         "labels": list(LABELS),
     }
 

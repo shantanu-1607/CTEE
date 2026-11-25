@@ -13,6 +13,14 @@ before downloading the combined file. Every combined-file ID, load label,
 house and appliance type matches the JSON. All 1,074 recordings are present;
 no duplicate recording/window keys or infinite measurement values were found.
 
+Five pairs do have identical electrical/time input windows: 234/389, 235/390,
+236/391, 237/392 and 238/393. Their IDs and house annotations differ, linking
+house11 to house19. Both houses are in development. A connected-component
+group keeps both houses in the same validation fold, including their other
+recordings. No identical summary crosses the fixed test boundary. We retain
+the original IDs for traceability, so 1,074 recording IDs correspond to 1,069
+distinct feature-summary rows, not 1,074 independently verified devices.
+
 Each row is a precomputed electrical-feature window. Timestamps and indices
 agree with 500 samples per window at 30,000 Hz. `end_sample` is inclusive;
 `t_end_s` is exclusive. Windows are checked for order and overlap. Recordings

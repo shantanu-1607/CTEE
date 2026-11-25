@@ -1,10 +1,10 @@
-import json
-
 import numpy as np
 import pandas as pd
 import pytest
 
-from load_classifier.data import LABELS, make_splits, read_metadata, validate_splits, validate_windows
+from load_classifier.data import (LABELS, duplicate_groups, make_splits, read_metadata,
+                                 validate_splits, validate_windows)
+from load_classifier.features import FEATURE_NAMES
 from load_classifier.experiment import load_prepared
 
 
@@ -65,3 +65,31 @@ def test_real_prepared_data_covers_the_supplied_json():
     assert audit["partition_counts"]["test"]["recordings"] == 215
     assert not set(records.loc[records.partition.eq("test"), "location"]) & set(
         records.loc[records.partition.eq("development"), "location"])
+    duplicates = records[records.duplicated(list(FEATURE_NAMES), keep=False)]
+    assert set(duplicates.id) == {234, 235, 236, 237, 238, 389, 390, 391, 392, 393}
+    assert duplicates.partition.eq("development").all()
+    assert duplicates.cv_fold.nunique() == 1
+
+
+def test_duplicate_groups_link_houses_transitively_and_reject_conflicting_labels():
+    metadata = pd.DataFrame({"id": [1, 2, 3, 4], "location": ["a", "b", "b", "c"], "load": ["R"] * 4})
+    summaries = pd.DataFrame([{**{name: value for name in FEATURE_NAMES}, "id": i}
+                              for i, value in [(1, 10.), (2, 10.), (3, 20.), (4, 20.)]])
+    groups, pairs = duplicate_groups(metadata, summaries)
+    assert groups.nunique() == 1
+    assert len(pairs) == 2
+    metadata.loc[1, "load"] = "RC"
+    with pytest.raises(ValueError, match="conflicting"):
+        duplicate_groups(metadata, summaries)
+
+
+def test_duplicate_link_cannot_cross_the_reserved_test_boundary():
+    metadata = pd.DataFrame([dict(id=4 * house + label + 1, location=f"house{house}", load=load)
+                             for house in range(25) for label, load in enumerate(LABELS)])
+    original = make_splits(metadata)
+    test_id = original[original.partition.eq("test") & original.load.eq("R")].id.iloc[0]
+    train_id = original[original.partition.eq("development") & original.load.eq("R")].id.iloc[0]
+    summaries = pd.DataFrame([{**{name: float(i) for name in FEATURE_NAMES}, "id": i} for i in metadata.id])
+    summaries.loc[summaries.id.eq(test_id), list(FEATURE_NAMES)] = float(train_id)
+    with pytest.raises(ValueError, match="cross the reserved"):
+        make_splits(metadata, summaries)

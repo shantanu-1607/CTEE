@@ -1,0 +1,951 @@
+{
+  "selected_model": "extra_trees_half",
+  "test": {
+    "recordings": 215,
+    "correct": 202,
+    "accuracy": 0.9395348837209302,
+    "balanced_accuracy": 0.925,
+    "macro_f1": 0.9275016260997568,
+    "weighted_f1": 0.9397068482484695,
+    "per_class": {
+      "R": {
+        "precision": 1.0,
+        "recall": 0.95,
+        "f1-score": 0.9743589743589743,
+        "support": 60.0
+      },
+      "I": {
+        "precision": 1.0,
+        "recall": 0.75,
+        "f1-score": 0.8571428571428571,
+        "support": 40.0
+      },
+      "RC": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 68.0
+      },
+      "RLC": {
+        "precision": 0.7833333333333333,
+        "recall": 1.0,
+        "f1-score": 0.8785046728971962,
+        "support": 47.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        57,
+        0,
+        0,
+        3
+      ],
+      [
+        0,
+        30,
+        0,
+        10
+      ],
+      [
+        0,
+        0,
+        68,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        47
+      ]
+    ],
+    "labels": [
+      "R",
+      "I",
+      "RC",
+      "RLC"
+    ]
+  },
+  "majority_baseline": {
+    "recordings": 215,
+    "correct": 68,
+    "accuracy": 0.31627906976744186,
+    "balanced_accuracy": 0.25,
+    "macro_f1": 0.12014134275618374,
+    "weighted_f1": 0.15199276851014873,
+    "per_class": {
+      "R": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 60.0
+      },
+      "I": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 40.0
+      },
+      "RC": {
+        "precision": 0.31627906976744186,
+        "recall": 1.0,
+        "f1-score": 0.48056537102473496,
+        "support": 68.0
+      },
+      "RLC": {
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1-score": 0.0,
+        "support": 47.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        0,
+        0,
+        60,
+        0
+      ],
+      [
+        0,
+        0,
+        40,
+        0
+      ],
+      [
+        0,
+        0,
+        68,
+        0
+      ],
+      [
+        0,
+        0,
+        47,
+        0
+      ]
+    ],
+    "labels": [
+      "R",
+      "I",
+      "RC",
+      "RLC"
+    ]
+  },
+  "house_bootstrap": {
+    "method": "resample whole test houses with replacement",
+    "repetitions": 2000,
+    "seed": 2026,
+    "houses": 12,
+    "accuracy_95_percent": [
+      0.8930191029900332,
+      0.9776536312849162
+    ],
+    "macro_f1_95_percent": [
+      0.8501783562559883,
+      0.9730008382013362
+    ]
+  },
+  "per_house": {
+    "house12": {
+      "recordings": 20,
+      "correct": 20,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house14": {
+      "recordings": 25,
+      "correct": 23,
+      "accuracy": 0.92,
+      "balanced_accuracy": 0.9,
+      "macro_f1": 0.9147727272727273,
+      "weighted_f1": 0.9136363636363636,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 0.6,
+          "f1-score": 0.75,
+          "support": 5.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 0.8333333333333334,
+          "recall": 1.0,
+          "f1-score": 0.9090909090909091,
+          "support": 10.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          3,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          10
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house18": {
+      "recordings": 9,
+      "correct": 9,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 0.5,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RC": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "RLC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 4.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          4
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house2": {
+      "recordings": 23,
+      "correct": 23,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 1.0,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 4.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 1.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 10.0
+        },
+        "RLC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 8.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          4,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          10,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          8
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house24": {
+      "recordings": 20,
+      "correct": 15,
+      "accuracy": 0.75,
+      "balanced_accuracy": 0.6666666666666666,
+      "macro_f1": 0.5,
+      "weighted_f1": 0.75,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 10.0
+        },
+        "I": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 5.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          10,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house31": {
+      "recordings": 25,
+      "correct": 23,
+      "accuracy": 0.92,
+      "balanced_accuracy": 0.9,
+      "macro_f1": 0.8958333333333334,
+      "weighted_f1": 0.9166666666666667,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 10.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 0.6,
+          "f1-score": 0.75,
+          "support": 5.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 0.7142857142857143,
+          "recall": 1.0,
+          "f1-score": 0.8333333333333334,
+          "support": 5.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          10,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          3,
+          0,
+          2
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house41": {
+      "recordings": 10,
+      "correct": 10,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 0.25,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "I": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 10.0
+        },
+        "RLC": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          10,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house48": {
+      "recordings": 11,
+      "correct": 11,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 0.75,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 1.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house49": {
+      "recordings": 27,
+      "correct": 26,
+      "accuracy": 0.9629629629629629,
+      "balanced_accuracy": 0.9583333333333334,
+      "macro_f1": 0.9545454545454546,
+      "weighted_f1": 0.9629629629629629,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 0.8333333333333334,
+          "f1-score": 0.9090909090909091,
+          "support": 6.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 11.0
+        },
+        "RLC": {
+          "precision": 0.8333333333333334,
+          "recall": 1.0,
+          "f1-score": 0.9090909090909091,
+          "support": 5.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          5,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          5,
+          0,
+          1
+        ],
+        [
+          0,
+          0,
+          11,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          5
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house5": {
+      "recordings": 2,
+      "correct": 2,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 0.25,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "I": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 2.0
+        },
+        "RLC": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          2,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house52": {
+      "recordings": 16,
+      "correct": 16,
+      "accuracy": 1.0,
+      "balanced_accuracy": 1.0,
+      "macro_f1": 0.75,
+      "weighted_f1": 1.0,
+      "per_class": {
+        "R": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 1.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 10.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          0,
+          0,
+          0,
+          0
+        ],
+        [
+          0,
+          1,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          10
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    },
+    "house7": {
+      "recordings": 27,
+      "correct": 24,
+      "accuracy": 0.8888888888888888,
+      "balanced_accuracy": 0.9375,
+      "macro_f1": 0.7241379310344828,
+      "weighted_f1": 0.9386973180076629,
+      "per_class": {
+        "R": {
+          "precision": 1.0,
+          "recall": 0.8125,
+          "f1-score": 0.896551724137931,
+          "support": 16.0
+        },
+        "I": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 6.0
+        },
+        "RC": {
+          "precision": 1.0,
+          "recall": 1.0,
+          "f1-score": 1.0,
+          "support": 5.0
+        },
+        "RLC": {
+          "precision": 0.0,
+          "recall": 0.0,
+          "f1-score": 0.0,
+          "support": 0.0
+        }
+      },
+      "confusion_matrix": [
+        [
+          13,
+          0,
+          0,
+          3
+        ],
+        [
+          0,
+          6,
+          0,
+          0
+        ],
+        [
+          0,
+          0,
+          5,
+          0
+        ],
+        [
+          0,
+          0,
+          0,
+          0
+        ]
+      ],
+      "labels": [
+        "R",
+        "I",
+        "RC",
+        "RLC"
+      ]
+    }
+  },
+  "model_sha256": "8091df8e8fe4d8cbfdce5ba6952f383d48f830cb807614ef7da7a71b493f9409",
+  "test_predictions_sha256": "9998afe0668ae24e5c8478bc6d7605c2e2010ca9f2d686d34828c7994ead5c22",
+  "input_fingerprint": {
+    "raw_csv_sha256": "5fee755b96b19de6cec432896828ac24cbcaf7866bde3df73f9551c2e24f69a4",
+    "metadata_sha256": "9fc0ccf4b45ded6ee2db76cebee3f856774d76b43355cb06fbd7f287f980b37b",
+    "recordings_sha256": "aa07587f680c2229a91bcbd4b28d0625c1388e6ee9dc771f82ded2ea6a27c3f4",
+    "splits_sha256": "9a71dad5677cb8f0b1ebcded2108785273d30faa76f7d12ba72e05f9e3705d94"
+  }
+}

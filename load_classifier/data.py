@@ -120,20 +120,52 @@ def validate_windows(frame, metadata=None):
     return frame
 
 
-def make_splits(metadata):
+def duplicate_groups(metadata, summaries):
+    """Link houses sharing exact recording summaries, including transitive links."""
+    from .features import FEATURE_NAMES
+    joined = metadata[["id", "location", "load"]].merge(summaries, on="id", validate="one_to_one")
+    parent = {house: house for house in metadata.location.unique()}
+
+    def root(house):
+        while parent[house] != house:
+            parent[house] = parent[parent[house]]
+            house = parent[house]
+        return house
+
+    duplicated = joined[joined.duplicated(list(FEATURE_NAMES), keep=False)]
+    groups = []
+    for _, part in duplicated.groupby(list(FEATURE_NAMES), dropna=False, sort=False):
+        if part.load.nunique() != 1:
+            raise ValueError("Identical recording summaries have conflicting load labels")
+        houses = sorted(part.location.unique())
+        for house in houses[1:]:
+            left, right = sorted((root(houses[0]), root(house)))
+            parent[right] = left
+        groups.append({"ids": part.id.astype(int).tolist(), "houses": houses})
+    return metadata.location.map(lambda house: root(house)), groups
+
+
+def make_splits(metadata, summaries=None):
     """Reserve fold zero for testing; assign four CV folds to the remaining houses."""
     metadata = metadata.sort_values("id").reset_index(drop=True)
+    if summaries is None:
+        grouping = metadata.location.copy()
+    else:
+        grouping, _ = duplicate_groups(metadata, summaries)
     if set(metadata.load) != set(LABELS):
         raise ValueError("The dataset must include all four load labels")
     outer = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=42)
     development, test = next(outer.split(metadata, metadata.load, metadata.location))
     manifest = metadata[["id", "location", "load"]].copy()
+    manifest["group_id"] = grouping
     manifest["partition"] = "development"
     manifest["cv_fold"] = -1
     manifest.loc[test, "partition"] = "test"
+    if manifest.groupby("group_id").partition.nunique().max() != 1:
+        raise ValueError("Exact duplicates cross the reserved test-house boundary; a new evaluation protocol is required")
     inner = StratifiedGroupKFold(n_splits=4, shuffle=True, random_state=43)
     part = metadata.iloc[development]
-    for fold, (train, validation) in enumerate(inner.split(part, part.load, part.location)):
+    for fold, (train, validation) in enumerate(inner.split(part, part.load, grouping.iloc[development])):
         if set(part.iloc[train].load) != set(LABELS) or set(part.iloc[validation].load) != set(LABELS):
             raise ValueError("A CV fold is missing a load class")
         manifest.loc[development[validation], "cv_fold"] = fold
@@ -152,6 +184,8 @@ def validate_splits(metadata, manifest):
         raise ValueError("Both development and test partitions are required")
     if joined.groupby("location").partition.nunique().max() != 1:
         raise ValueError("A house occurs in both development and test")
+    if "group_id" in joined and joined.groupby("group_id").partition.nunique().max() != 1:
+        raise ValueError("A duplicate-connected group crosses the test boundary")
     for _, part in joined.groupby("partition"):
         if set(part.load) != set(LABELS):
             raise ValueError("A partition is missing a load class")
@@ -160,5 +194,7 @@ def validate_splits(metadata, manifest):
         raise ValueError("Development rows must have one of four CV folds")
     if development.groupby("location").cv_fold.nunique().max() != 1:
         raise ValueError("A house occurs in multiple validation folds")
+    if "group_id" in development and development.groupby("group_id").cv_fold.nunique().max() != 1:
+        raise ValueError("A duplicate-connected group occurs in multiple validation folds")
     if not joined.loc[joined.partition.eq("test"), "cv_fold"].eq(-1).all():
         raise ValueError("Test recordings cannot be used in cross-validation")

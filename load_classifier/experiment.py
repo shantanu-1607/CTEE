@@ -14,7 +14,7 @@ from sklearn.base import clone
 from sklearn.exceptions import ConvergenceWarning
 from threadpoolctl import threadpool_limits
 
-from .data import (LABELS, MEASUREMENTS, file_hash, make_splits, read_metadata,
+from .data import (LABELS, MEASUREMENTS, duplicate_groups, file_hash, make_splits, read_metadata,
                    validate_splits, validate_windows, write_json)
 from .features import FEATURE_NAMES, STATIC_FEATURES, aggregate_windows
 from .metrics import classification_scores
@@ -29,7 +29,8 @@ def prepare(csv_path, metadata_path, output):
     windows = validate_windows(pd.read_csv(csv_path), metadata)
     summaries = aggregate_windows(windows, validate=False)
     records = metadata.merge(summaries, on="id", validate="one_to_one")
-    splits = make_splits(metadata)
+    splits = make_splits(metadata, summaries)
+    _, duplicate_summary_groups = duplicate_groups(metadata, summaries)
     output.mkdir(parents=True, exist_ok=True)
     records.to_csv(output / "recordings.csv", index=False)
     splits.to_csv(output / "splits.csv", index=False)
@@ -43,6 +44,8 @@ def prepare(csv_path, metadata_path, output):
         "windows_per_recording": {"min": int(windows.groupby("id").size().min()),
                                   "max": int(windows.groupby("id").size().max())},
         "duplicate_recording_window_keys": int(windows.duplicated(["id", "window_idx"]).sum()),
+        "exact_duplicate_summary_groups": duplicate_summary_groups,
+        "duplicate_summary_excess_recordings": int(records.duplicated(list(FEATURE_NAMES)).sum()),
         "metadata_matches_all_recordings": True,
         "load_counts": {k: int(v) for k, v in metadata.load.value_counts().items()},
         "appliance_to_load": {str(k): sorted(v.load.unique().tolist())
@@ -58,7 +61,7 @@ def prepare(csv_path, metadata_path, output):
         "splits_sha256": file_hash(output / "splits.csv"),
         "split_protocol": {"outer_folds": 5, "test_fold": 0, "seed": 42,
                            "development_cv_folds": 4, "development_cv_seed": 43,
-                           "group": "location (house)", "stratify": "load"},
+                           "group": "house; development houses sharing exact summaries stay in one CV fold", "stratify": "load"},
     }
     for name, part in splits.groupby("partition"):
         audit["partition_counts"][name] = {
@@ -82,6 +85,10 @@ def load_prepared(directory):
         raise ValueError("Prepared feature schema differs from this code")
     if records[list(FEATURE_NAMES)].isin([np.inf, -np.inf]).any().any():
         raise ValueError("Prepared features contain infinite values")
+    grouping, _ = duplicate_groups(records, records[["id", *FEATURE_NAMES]])
+    expected_groups = pd.Series(grouping.to_numpy(), index=records.id)
+    if "group_id" not in splits or not splits.group_id.eq(splits.id.map(expected_groups)).all():
+        raise ValueError("Split groups do not match duplicate-connected houses")
     return records.merge(splits[["id", "partition", "cv_fold"]], on="id", validate="one_to_one"), audit
 
 
@@ -186,10 +193,18 @@ def train(directory, run):
               "selection_sha256": file_hash(run / "selection.json"),
               "version": 1}
     joblib.dump(bundle, run / "model.joblib", compress=3)
+    imputer = model.named_steps["impute"]
+    transformed_names = imputer.get_feature_names_out()
+    classifier = model.named_steps["classifier"]
+    if hasattr(classifier, "feature_importances_"):
+        pd.DataFrame({"feature": transformed_names, "importance": classifier.feature_importances_}) \
+            .sort_values("importance", ascending=False).to_csv(run / "feature_importance.csv", index=False)
+    apparent = classification_scores(development.load, model.predict(development[list(FEATURE_NAMES)]))
     write_json(run / "training.json", {
         "model": selection["selected_model"], "recordings": len(development),
         "houses": int(development.location.nunique()), "features": len(FEATURE_NAMES),
         "fit_seconds": time.perf_counter() - started, "test_used_for_training": False,
+        "fitted_input_count": len(transformed_names), "apparent_training_metrics": apparent,
         "model_sha256": file_hash(run / "model.joblib"),
         "selection_sha256": bundle["selection_sha256"],
         "input_fingerprint": input_fingerprint(audit),

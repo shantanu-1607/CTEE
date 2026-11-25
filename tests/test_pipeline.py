@@ -35,7 +35,7 @@ def test_training_saving_and_unlabelled_inference(tmp_path, monkeypatch):
                 "appliance": {"load": load, "type": "sample"}, "location": f"house{house}",
                 "header": {"sampling_frequency": "30000Hz", "collection_time": "July, 2013"}}})
             for i in range(6):
-                row = {name: float(label + 1) + .01 * i for name in MEASUREMENTS}
+                row = {name: float(label + 1) + .01 * i + .0001 * house for name in MEASUREMENTS}
                 row.update(id=recording, window_idx=i, start_sample=i * 500, end_sample=(i + 1) * 500 - 1,
                            t_start_s=i / 60, t_end_s=(i + 1) / 60, load=load,
                            location=f"house{house}", appliance_type="sample")

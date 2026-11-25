@@ -1,5 +1,5 @@
 {
-  "selected_model": "extra_trees_all",
+  "selected_model": "extra_trees_half",
   "selection_metric": "mean validation macro-F1 across four house-grouped folds",
   "training_seed": 42,
   "test_used_in_selection": false,
@@ -7,7 +7,7 @@
     "raw_csv_sha256": "5fee755b96b19de6cec432896828ac24cbcaf7866bde3df73f9551c2e24f69a4",
     "metadata_sha256": "9fc0ccf4b45ded6ee2db76cebee3f856774d76b43355cb06fbd7f287f980b37b",
     "recordings_sha256": "aa07587f680c2229a91bcbd4b28d0625c1388e6ee9dc771f82ded2ea6a27c3f4",
-    "splits_sha256": "4366e73daf6fc630366b92e81162664879bb4a45f8e5cf96eb2941c63b52a7eb"
+    "splits_sha256": "9a71dad5677cb8f0b1ebcded2108785273d30faa76f7d12ba72e05f9e3705d94"
   },
   "features": [
     "v_rms__p10",
@@ -521,34 +521,34 @@
   },
   "warnings": [],
   "ablation": {
-    "model": "extra_trees_all",
+    "model": "extra_trees_half",
     "median_only_folds": [
       {
         "fold": 0,
-        "accuracy": 0.9217391304347826,
-        "macro_f1": 0.9017721812295534
+        "accuracy": 0.8712871287128713,
+        "macro_f1": 0.8499115913992059
       },
       {
         "fold": 1,
-        "accuracy": 0.9047619047619048,
-        "macro_f1": 0.8844196982015086
+        "accuracy": 0.9216589861751152,
+        "macro_f1": 0.8984603754997399
       },
       {
         "fold": 2,
-        "accuracy": 0.9278846153846154,
-        "macro_f1": 0.9158672948788481
+        "accuracy": 0.8894230769230769,
+        "macro_f1": 0.8709127649839866
       },
       {
         "fold": 3,
-        "accuracy": 0.9146919431279621,
-        "macro_f1": 0.8949592765600671
+        "accuracy": 0.9525862068965517,
+        "macro_f1": 0.9404193360512522
       }
     ],
-    "median_only_macro_f1_mean": 0.8992546127174943,
-    "temporal_macro_f1_mean": 0.9131461286671098,
+    "median_only_macro_f1_mean": 0.8899260169835461,
+    "temporal_macro_f1_mean": 0.9056180948875792,
     "purpose": "Development-only comparison; the requested model uses temporal summaries."
   },
-  "comparison_sha256": "9d2e34f27434bd5a4b55e5a9a4acc20f2bcd5472f8ff8cc98837484dd7f69004",
+  "comparison_sha256": "5f1442259db5e28eef0111471a1bd3ce72c8ee53611ed4eee51a79c95af740af",
   "environment": {
     "python": "3.12.14",
     "numpy": "2.3.5",

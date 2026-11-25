@@ -13,16 +13,31 @@ were not supplied with these files.
 ## Model and evaluation
 
 The selected model is **Extra Trees with 400 trees**, balanced class weights
-and all available features considered at each split. Selection uses mean
+and half of the available features considered at each split. Selection uses mean
 macro-F1 across four validation folds containing separate houses. Candidates
 include a majority baseline, logistic regression, two SVM settings, a random
 forest, gradient boosting, a neural network and Extra Trees settings.
 The initial comparison was followed by three additional Extra Trees variants,
 using development results only. No test score was used for this choice.
 
-The selected setting achieved **92.87% mean validation accuracy** and **0.9131
-mean validation macro-F1**. These are validation results. Final held-out test
-results are written to `runs/timestamped/report.md` by `evaluate`.
+The selected setting achieved **92.39% mean validation accuracy** and **0.9056
+mean validation macro-F1**. On the reserved test houses it achieved **93.95%
+accuracy (202/215)**, **0.9275 macro-F1** and **92.50% balanced accuracy**.
+The majority-class test baseline is 31.63%. See the [full test report](runs/timestamped/report.md)
+and [professor explanation](docs/professor-guide.md).
+
+| Test class | Precision | Recall | F1 | Recordings |
+| --- | ---: | ---: | ---: | ---: |
+| R | 1.0000 | 0.9500 | 0.9744 | 60 |
+| I | 1.0000 | 0.7500 | 0.8571 | 40 |
+| RC | 1.0000 | 1.0000 | 1.0000 | 68 |
+| RLC | 0.7833 | 1.0000 | 0.8785 | 47 |
+
+All 13 mistakes were false RLC predictions: 10 actual I recordings and three
+actual R recordings. I recall is the main weakness at 75%. Training accuracy is 100%,
+which is an apparent fit score, not evidence of generalization. Validation
+and test scores provide the useful estimate. Whole-house bootstrap gives an
+approximate 95% accuracy interval of 89.30%–97.77% on this collection.
 
 - Development: 859 recordings from 43 houses, with four grouped validation folds.
 - Test: 215 recordings from 12 other houses, reserved before model comparison.
@@ -30,6 +45,17 @@ results are written to `runs/timestamped/report.md` by `evaluate`.
 - No house appears in both development and test, or in multiple validation folds.
 - Imputation and scaling are fitted inside each training fold.
 - The selected pipeline is finally fitted on all 859 development recordings.
+
+Five pairs of recordings have identical electrical/time inputs despite different
+IDs and house names. They link house11 and house19, both in development. The
+split keeps these houses in the same validation fold. There are 1,069 distinct
+summary rows and 54 duplicate-connected house groups overall. All recording
+IDs are retained, and no duplicate summary crosses the test boundary.
+
+This duplicate connection was found after an initial test evaluation. The
+development comparison was corrected with the same 12 candidate settings and
+unchanged test IDs. Final selection used corrected development scores, not
+test performance. The reported result is the re-evaluation after that fix.
 
 ## How time is used
 
@@ -40,6 +66,9 @@ late refer to the first and last 20% of elapsed time. This produces **184 inputs
 per recording. The full sequence is required at inference; this is an offline
 classifier, not a real-time or future-load forecasting model.
 
+The fitted imputer adds 64 missing-value indicators, so the selected forest
+actually receives 248 numeric columns: 184 summaries plus 64 indicators.
+
 Inputs include current, voltage, real/apparent/nonactive power, power factor,
 phase sine/cosine, waveform shape and harmonics. ID, label, appliance name,
 house, collection date, window count and recording duration are excluded.
@@ -47,11 +76,10 @@ Raw timestamps and sample/window indices are used for ordering and rate
 calculations, rather than directly as predictors. Equivalent-component
 estimates and algebraically redundant derived columns are omitted.
 
-The median-only ablation for the selected setting scored **0.8993 validation
-macro-F1**, compared with **0.9131** for the full summaries. This comparison
+The median-only ablation for the selected setting scored **0.8899 validation
+macro-F1**, compared with **0.9056** for the full summaries. This comparison
 changes both distribution and time summaries; it does not isolate a causal
-benefit from timestamps alone. The default Extra Trees setting had a stronger
-median-only result, so time summaries do not help every classifier setting.
+benefit from timestamps alone. Adding features does not automatically improve every classifier setting.
 
 ## Run
 
@@ -103,6 +131,10 @@ names and house columns are optional and ignored during prediction.
 python -m load_classifier predict --input new_recordings.csv --output predictions.csv
 ```
 
+For a runnable example, use `--input examples/recordings.csv`. This file contains
+four recordings from development houses with their labels and names removed.
+It is a usage example, not an additional test set.
+
 The output has one row per recording, its predicted class and four probabilities.
 These probabilities have not been independently calibrated. Load only trusted
 model files: joblib uses pickle and must not open arbitrary model uploads.
@@ -141,3 +173,18 @@ dataset and task and should not be compared directly.
 Algorithm and evaluation background: [Extra Trees documentation](https://scikit-learn.org/stable/modules/ensemble.html#extremely-randomized-trees)
 and [grouped cross-validation](https://scikit-learn.org/stable/modules/cross_validation.html#stratifiedgroupkfold).
 See `data/README.md` for provenance and source checks.
+
+## Verification
+
+All 20 tests passed. Saved-model inference replays all 215 test predictions,
+and an independent recount matches the reported confusion matrix and scores.
+Rebuilding the prepared data reproduced all three data files byte for byte.
+A second unchanged-seed comparison selected the same model and reproduced
+all cross-validation class predictions, all 400 fitted tree structures and
+all 1,074 recording class predictions. Probabilities matched within 1e-14.
+This establishes local reproducibility, not robustness across random seeds.
+Evidence is recorded in `runs/timestamped/verification.json`.
+
+GitHub Actions runs the test suite and saved-result verification on pushes
+and pull requests. The four-recording prediction example also runs without
+labels or appliance names.

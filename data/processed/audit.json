@@ -15,6 +15,59 @@
     "max": 806
   },
   "duplicate_recording_window_keys": 0,
+  "exact_duplicate_summary_groups": [
+    {
+      "ids": [
+        234,
+        389
+      ],
+      "houses": [
+        "house11",
+        "house19"
+      ]
+    },
+    {
+      "ids": [
+        235,
+        390
+      ],
+      "houses": [
+        "house11",
+        "house19"
+      ]
+    },
+    {
+      "ids": [
+        236,
+        391
+      ],
+      "houses": [
+        "house11",
+        "house19"
+      ]
+    },
+    {
+      "ids": [
+        237,
+        392
+      ],
+      "houses": [
+        "house11",
+        "house19"
+      ]
+    },
+    {
+      "ids": [
+        238,
+        393
+      ],
+      "houses": [
+        "house11",
+        "house19"
+      ]
+    }
+  ],
+  "duplicate_summary_excess_recordings": 5,
   "metadata_matches_all_recordings": true,
   "load_counts": {
     "RC": 347,
@@ -477,14 +530,14 @@
     }
   },
   "recordings_sha256": "aa07587f680c2229a91bcbd4b28d0625c1388e6ee9dc771f82ded2ea6a27c3f4",
-  "splits_sha256": "4366e73daf6fc630366b92e81162664879bb4a45f8e5cf96eb2941c63b52a7eb",
+  "splits_sha256": "9a71dad5677cb8f0b1ebcded2108785273d30faa76f7d12ba72e05f9e3705d94",
   "split_protocol": {
     "outer_folds": 5,
     "test_fold": 0,
     "seed": 42,
     "development_cv_folds": 4,
     "development_cv_seed": 43,
-    "group": "location (house)",
+    "group": "house; development houses sharing exact summaries stay in one CV fold",
     "stratify": "load"
   }
 }
