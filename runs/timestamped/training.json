@@ -1,0 +1,16 @@
+{
+  "model": "extra_trees_all",
+  "recordings": 859,
+  "houses": 43,
+  "features": 184,
+  "fit_seconds": 0.6117354580201209,
+  "test_used_for_training": false,
+  "model_sha256": "2d7cc1449148ef28c24d08a5519f3a4013920db00a51d319144cda1827ff3c7a",
+  "selection_sha256": "65ea03efe129a7def487b685382a4585bba567ca609b167102b48a86ac130243",
+  "input_fingerprint": {
+    "raw_csv_sha256": "5fee755b96b19de6cec432896828ac24cbcaf7866bde3df73f9551c2e24f69a4",
+    "metadata_sha256": "9fc0ccf4b45ded6ee2db76cebee3f856774d76b43355cb06fbd7f287f980b37b",
+    "recordings_sha256": "aa07587f680c2229a91bcbd4b28d0625c1388e6ee9dc771f82ded2ea6a27c3f4",
+    "splits_sha256": "4366e73daf6fc630366b92e81162664879bb4a45f8e5cf96eb2941c63b52a7eb"
+  }
+}

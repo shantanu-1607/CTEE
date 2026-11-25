@@ -1,1 +1,1 @@
-"""Supervised classification of load behaviour and circuit type."""
+"""Classify the supplied R, I, RC and RLC labels from timestamped recordings."""
