@@ -78,6 +78,8 @@ def main():
     ci = metrics["approximate_week_block_bootstrap_95_ci"]
     report = f"""# Model 3: Khusboo building load-profile classifier
 
+> **Requirement correction, 27 November 2026:** This report evaluates building identity only. It does not evaluate R/L/C circuit types or constant-voltage/current/impedance behaviour, and its accuracy must not be used as a result for those tasks. The experiment is retained for traceability. See [the circuit-task reassessment](../../CIRCUIT_TASK_REASSESSMENT.md).
+
 ## The question this model answers
 
 Given one completed day's electrical measurements, did it come from the **Academic**, **Facilities**, or **Mess** building in this dataset? These labels come from the three source filenames and the supplied Readme. They describe building identity. They are not R/I/RC/RLC, individual appliances, or confirmed physical resistive/inductive/capacitive load types.

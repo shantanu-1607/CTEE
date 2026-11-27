@@ -1,0 +1,25 @@
+{
+  "intended_circuit_labels": [
+    "R",
+    "L",
+    "C",
+    "RL",
+    "RC",
+    "RLC",
+    "LC"
+  ],
+  "requested_behaviour_labels": [
+    "constant_voltage",
+    "constant_current",
+    "constant_impedance"
+  ],
+  "behaviour_definition_confirmed": false,
+  "verified_target_labels_in_archive": false,
+  "circuit_classifier_trained": false,
+  "behaviour_classifier_trained": false,
+  "existing_accuracy_target": "building_identity_only",
+  "existing_accuracy_valid_for_requested_task": false,
+  "analytical_matching_pairs_verified": 5,
+  "counterexamples_are_training_data": false,
+  "decision": "Await verified labels or an agreed replacement data source, plus behaviour definition; do not manufacture ground truth."
+}
