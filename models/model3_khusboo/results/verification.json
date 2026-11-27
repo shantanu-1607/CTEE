@@ -1,0 +1,19 @@
+{
+  "passed": true,
+  "unique_examples": 4361,
+  "development_examples": 3410,
+  "test_examples": 931,
+  "features": 69,
+  "checks": [
+    "dates stay in one partition",
+    "no IDs or exact profile/feature duplicates cross splits",
+    "seven-day gaps in holdout and all CV folds",
+    "all CV samples belong to development",
+    "all classes represented",
+    "imputer matches development-only medians",
+    "separate preprocessing equals pipeline preprocessing",
+    "serialized model reproduces frozen test predictions",
+    "metrics and confusion matrix recomputed from predictions"
+  ],
+  "test_metrics_sha256": "1f7e46b1569946a039e047d93628dd5233cf2177841335fc28054ff402feabaf"
+}

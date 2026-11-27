@@ -1,0 +1,32 @@
+{
+  "seed": 20261127,
+  "target": "source building of a completed daily electrical profile",
+  "labels": [
+    "Academic",
+    "Facilities",
+    "Mess"
+  ],
+  "timezone": "Asia/Kolkata",
+  "test_start": "2017-02-10",
+  "embargo_start": "2017-02-03",
+  "test_rule": "last 20% of eligible distinct dates; all buildings share each date's partition",
+  "cv": "3 expanding chronological folds, each with seven calendar days purged before validation",
+  "selection": "highest mean validation macro F1; ties follow fixed candidate order",
+  "minimum_paired_minutes": 1152,
+  "minimum_hours_with_30_paired_minutes": 20,
+  "predictors": "power and signed power factor summaries only",
+  "excluded_predictors": [
+    "source filename",
+    "building",
+    "calendar activity",
+    "working_day",
+    "date",
+    "year",
+    "current",
+    "voltage",
+    "frequency",
+    "availability flags",
+    "coverage counts"
+  ],
+  "test_policy": "select and serialize the development-fitted model before one final test evaluation; no refit on test"
+}

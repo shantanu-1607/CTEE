@@ -1,0 +1,53 @@
+{
+  "passed": true,
+  "worksheets": [
+    "Overview",
+    "Predictions",
+    "Validation",
+    "Comparison",
+    "Daily patterns",
+    "Test months",
+    "Features",
+    "Data quality"
+  ],
+  "native_charts": 6,
+  "headline_formulas_match_python_metrics": true,
+  "formula_error_cells": 0,
+  "chart_bindings": {
+    "xl/drawings/charts/chart1.xml": [
+      "'Overview'!$A$19:$A$21",
+      "'Overview'!$B$19:$B$21",
+      "'Overview'!$A$19:$A$21",
+      "'Overview'!$C$19:$C$21",
+      "'Overview'!$A$19:$A$21",
+      "'Overview'!$D$19:$D$21"
+    ],
+    "xl/drawings/charts/chart2.xml": [
+      "'Data quality'!$A$6:$A$8",
+      "'Data quality'!$B$6:$B$8",
+      "'Data quality'!$A$6:$A$8",
+      "'Data quality'!$D$6:$D$8"
+    ],
+    "xl/drawings/charts/chart3.xml": [
+      "'Comparison'!$A$6:$A$10",
+      "'Comparison'!$B$6:$B$10"
+    ],
+    "xl/drawings/charts/chart4.xml": [
+      "'Daily patterns'!$A$6:$A$29",
+      "'Daily patterns'!$B$6:$B$29",
+      "'Daily patterns'!$A$6:$A$29",
+      "'Daily patterns'!$C$6:$C$29",
+      "'Daily patterns'!$A$6:$A$29",
+      "'Daily patterns'!$D$6:$D$29"
+    ],
+    "xl/drawings/charts/chart5.xml": [
+      "'Test months'!$A$6:$A$16",
+      "'Test months'!$D$6:$D$16"
+    ],
+    "xl/drawings/charts/chart6.xml": [
+      "'Features'!$A$6:$A$17",
+      "'Features'!$B$6:$B$17"
+    ]
+  },
+  "visual_review": "All eight sheet previews and all five scientific figures reviewed; the feature chart was repaired and reviewed again."
+}

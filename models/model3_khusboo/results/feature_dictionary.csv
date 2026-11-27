@@ -1,0 +1,70 @@
+feature,unit,definition
+power_mean,W,Daily electrical summary
+power_std,W,Daily electrical summary
+power_min,W,Daily electrical summary
+power_q10,W,Daily electrical summary
+power_median,W,Daily electrical summary
+power_q90,W,Daily electrical summary
+power_max,W,Daily electrical summary
+pf_mean,ratio,Daily electrical summary
+pf_std,ratio,Daily electrical summary
+pf_min,ratio,Daily electrical summary
+pf_q10,ratio,Daily electrical summary
+pf_median,ratio,Daily electrical summary
+pf_q90,ratio,Daily electrical summary
+pf_max,ratio,Daily electrical summary
+power_iqr,W,Daily electrical summary
+power_cv,ratio,Power standard deviation / mean power
+pf_negative_fraction,ratio,Fraction of measured power factors below zero; sign retained without interpreting reactive load type
+power_ramp_mean,W,Absolute change between adjacent valid one-minute power measurements
+power_ramp_q90,W,Absolute change between adjacent valid one-minute power measurements
+day_night_power_ratio,ratio,Mean power 09:00-17:59 / mean power 00:00-05:59
+peak_mean_power_ratio,ratio,Maximum power / mean power
+power_hour_00,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_00,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_01,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_01,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_02,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_02,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_03,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_03,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_04,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_04,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_05,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_05,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_06,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_06,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_07,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_07,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_08,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_08,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_09,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_09,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_10,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_10,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_11,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_11,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_12,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_12,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_13,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_13,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_14,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_14,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_15,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_15,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_16,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_16,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_17,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_17,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_18,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_18,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_19,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_19,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_20,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_20,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_21,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_21,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_22,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_22,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
+power_hour_23,W,Mean of paired valid samples during this local hour (at least 30 minutes)
+pf_hour_23,ratio,Mean of paired valid samples during this local hour (at least 30 minutes)
