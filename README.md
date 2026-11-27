@@ -1,5 +1,12 @@
 # Electrical load classification
 
+The academic deliverables are the [project report](outputs/timestamped-report-20261127/electrical_load_classification_report.docx)
+and [chart data workbook](outputs/timestamped-report-20261127/chart_data.xlsx).
+The report follows the supplied reference's nine-section structure with original
+content for this experiment. The Excel workbook contains the numerical figure
+data, seven editable charts, all test predictions and a feature dictionary.
+Its confusion matrix and headline test scores are formulas linked to the predictions.
+
 Predict the supplied **R, I, RC or RLC** label from a complete timestamped
 electrical recording. The new data replaces the previous simulated workbook
 and its CC/CP/CZ prediction task. That work remains in Git history.
