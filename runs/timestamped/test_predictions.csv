@@ -1,0 +1,216 @@
+id,location,actual_load,appliance_type,predicted_load,probability_R,probability_I,probability_RC,probability_RLC,correct
+15,house2,RLC,Air Conditioner,RLC,0.0275,0.095,0.0025,0.875,True
+16,house2,RLC,Air Conditioner,RLC,0.025,0.095,0.0,0.88,True
+17,house2,RLC,Air Conditioner,RLC,0.0225,0.1325,0.0,0.845,True
+18,house2,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+19,house2,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+20,house2,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+21,house2,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+22,house2,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+23,house2,I,Fridge,I,0.0275,0.51,0.1025,0.36,True
+24,house2,R,Hairdryer,R,0.7,0.16,0.0275,0.1125,True
+25,house2,R,Hairdryer,R,0.7825,0.14,0.005,0.0725,True
+26,house2,R,Hairdryer,R,0.8475,0.1075,0.0075,0.0375,True
+27,house2,R,Hairdryer,R,0.7925,0.1075,0.0175,0.0825,True
+28,house2,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+29,house2,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+30,house2,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+31,house2,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+32,house2,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+33,house2,RLC,Microwave,RLC,0.0,0.04,0.04,0.92,True
+34,house2,RLC,Microwave,RLC,0.01,0.045,0.1075,0.8375,True
+35,house2,RLC,Microwave,RLC,0.0075,0.045,0.0925,0.855,True
+36,house2,RLC,Microwave,RLC,0.005,0.04,0.06,0.895,True
+37,house2,RLC,Microwave,RLC,0.0025,0.0475,0.06,0.89,True
+81,house5,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+82,house5,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+119,house7,R,Incandescent Light Bulb,R,0.9675,0.025,0.0,0.0075,True
+120,house7,R,Incandescent Light Bulb,R,0.955,0.0425,0.0,0.0025,True
+121,house7,R,Incandescent Light Bulb,R,0.955,0.04,0.0,0.005,True
+122,house7,R,Incandescent Light Bulb,R,0.9575,0.0325,0.0,0.01,True
+123,house7,R,Incandescent Light Bulb,R,0.96,0.0375,0.0,0.0025,True
+124,house7,I,Fan,I,0.025,0.7825,0.1425,0.05,True
+125,house7,I,Fan,I,0.0325,0.7775,0.1425,0.0475,True
+126,house7,I,Fan,I,0.03,0.7825,0.1375,0.05,True
+127,house7,I,Fan,I,0.0575,0.74,0.1475,0.055,True
+128,house7,I,Fan,I,0.0575,0.7425,0.145,0.055,True
+129,house7,I,Fridge,I,0.0175,0.6575,0.0025,0.3225,True
+130,house7,R,Hairdryer,R,0.995,0.005,0.0,0.0,True
+131,house7,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+132,house7,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+133,house7,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+134,house7,R,Hairdryer,R,0.9975,0.0,0.0,0.0025,True
+135,house7,R,Heater,R,0.55,0.11,0.0,0.34,True
+136,house7,R,Heater,RLC,0.0325,0.1425,0.1275,0.6975,False
+137,house7,R,Heater,R,0.5425,0.1175,0.0025,0.3375,True
+138,house7,R,Heater,RLC,0.0325,0.1525,0.0675,0.7475,False
+139,house7,R,Heater,R,0.565,0.1475,0.0,0.2875,True
+140,house7,R,Heater,RLC,0.05,0.0975,0.055,0.7975,False
+141,house7,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+142,house7,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+143,house7,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+144,house7,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+145,house7,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+244,house12,R,Incandescent Light Bulb,R,0.8975,0.095,0.0,0.0075,True
+245,house12,R,Incandescent Light Bulb,R,0.8625,0.135,0.0,0.0025,True
+246,house12,R,Incandescent Light Bulb,R,0.92,0.0775,0.0,0.0025,True
+247,house12,R,Incandescent Light Bulb,R,0.9325,0.0625,0.0,0.005,True
+248,house12,R,Incandescent Light Bulb,R,0.825,0.1725,0.0,0.0025,True
+249,house12,I,Fan,I,0.275,0.655,0.015,0.055,True
+250,house12,I,Fan,I,0.245,0.68,0.0275,0.0475,True
+251,house12,I,Fan,I,0.31,0.585,0.0625,0.0425,True
+252,house12,I,Fan,I,0.3025,0.5675,0.0675,0.0625,True
+253,house12,I,Fan,I,0.23,0.675,0.055,0.04,True
+254,house12,RC,Laptop,RC,0.0475,0.1475,0.75,0.055,True
+255,house12,RC,Laptop,RC,0.0475,0.1375,0.75,0.065,True
+256,house12,RC,Laptop,RC,0.065,0.155,0.7225,0.0575,True
+257,house12,RC,Laptop,RC,0.05,0.1425,0.7375,0.07,True
+258,house12,RC,Laptop,RC,0.05,0.1325,0.76,0.0575,True
+259,house12,RLC,Microwave,RLC,0.0275,0.02,0.01,0.9425,True
+260,house12,RLC,Microwave,RLC,0.0025,0.0,0.0,0.9975,True
+261,house12,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+262,house12,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+263,house12,RLC,Microwave,RLC,0.0025,0.0,0.0,0.9975,True
+288,house14,RLC,Air Conditioner,RLC,0.0,0.2625,0.05,0.6875,True
+289,house14,RLC,Air Conditioner,RLC,0.015,0.0575,0.0025,0.925,True
+290,house14,RLC,Air Conditioner,RLC,0.0025,0.27,0.04,0.6875,True
+291,house14,RLC,Air Conditioner,RLC,0.005,0.0525,0.0,0.9425,True
+292,house14,RLC,Air Conditioner,RLC,0.09,0.235,0.0175,0.6575,True
+293,house14,R,Incandescent Light Bulb,R,0.8275,0.1075,0.0075,0.0575,True
+294,house14,R,Incandescent Light Bulb,R,0.865,0.085,0.0,0.05,True
+295,house14,R,Incandescent Light Bulb,R,0.905,0.065,0.0075,0.0225,True
+296,house14,R,Incandescent Light Bulb,R,0.91,0.05,0.005,0.035,True
+297,house14,R,Incandescent Light Bulb,R,0.925,0.045,0.0025,0.0275,True
+298,house14,I,Fan,I,0.0775,0.465,0.0,0.4575,True
+299,house14,I,Fan,RLC,0.175,0.3625,0.0175,0.445,False
+300,house14,I,Fan,I,0.0975,0.4825,0.0,0.42,True
+301,house14,I,Fan,I,0.185,0.4025,0.0125,0.4,True
+302,house14,I,Fan,RLC,0.1775,0.39,0.0125,0.42,False
+303,house14,RC,Laptop,RC,0.0,0.0025,0.9975,0.0,True
+304,house14,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+305,house14,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+306,house14,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+307,house14,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+308,house14,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+309,house14,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+310,house14,RLC,Microwave,RLC,0.0025,0.0,0.0,0.9975,True
+311,house14,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+312,house14,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+365,house18,RLC,Air Conditioner,RLC,0.005,0.145,0.0425,0.8075,True
+366,house18,RLC,Air Conditioner,RLC,0.0125,0.1875,0.0575,0.7425,True
+367,house18,RLC,Air Conditioner,RLC,0.015,0.1425,0.0,0.8425,True
+368,house18,RLC,Air Conditioner,RLC,0.03,0.2025,0.005,0.7625,True
+369,house18,I,Fan,I,0.0575,0.8775,0.0375,0.0275,True
+370,house18,I,Fan,I,0.0975,0.83,0.04,0.0325,True
+371,house18,I,Fan,I,0.06,0.8625,0.0425,0.035,True
+372,house18,I,Fan,I,0.025,0.8975,0.04,0.0375,True
+373,house18,I,Fan,I,0.0175,0.9025,0.0425,0.0375,True
+493,house24,R,Incandescent Light Bulb,R,0.9275,0.07,0.0,0.0025,True
+494,house24,R,Incandescent Light Bulb,R,0.6375,0.29,0.0025,0.07,True
+495,house24,R,Incandescent Light Bulb,R,0.9475,0.0475,0.0,0.005,True
+496,house24,R,Incandescent Light Bulb,R,0.9475,0.0525,0.0,0.0,True
+497,house24,R,Incandescent Light Bulb,R,0.9475,0.0525,0.0,0.0,True
+498,house24,I,Fan,RLC,0.115,0.405,0.0025,0.4775,False
+499,house24,I,Fan,RLC,0.1075,0.3675,0.0175,0.5075,False
+500,house24,I,Fan,RLC,0.1125,0.39,0.015,0.4825,False
+501,house24,I,Fan,RLC,0.1025,0.385,0.0125,0.5,False
+502,house24,I,Fan,RLC,0.135,0.385,0.0025,0.4775,False
+503,house24,R,Hairdryer,R,0.995,0.005,0.0,0.0,True
+504,house24,R,Hairdryer,R,0.9975,0.0,0.0,0.0025,True
+505,house24,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+506,house24,R,Hairdryer,R,0.9275,0.0425,0.0,0.03,True
+507,house24,R,Hairdryer,R,0.9925,0.0,0.0,0.0075,True
+508,house24,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+509,house24,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+510,house24,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+511,house24,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+512,house24,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+626,house31,R,Incandescent Light Bulb,R,0.965,0.0275,0.0025,0.005,True
+627,house31,R,Incandescent Light Bulb,R,0.9625,0.0325,0.0025,0.0025,True
+628,house31,R,Incandescent Light Bulb,R,0.9375,0.0575,0.0,0.005,True
+629,house31,R,Incandescent Light Bulb,R,0.9375,0.0575,0.0025,0.0025,True
+630,house31,R,Incandescent Light Bulb,R,0.9525,0.0375,0.0025,0.0075,True
+631,house31,I,Fridge,I,0.0325,0.6775,0.005,0.285,True
+632,house31,I,Fridge,I,0.01,0.6475,0.0075,0.335,True
+633,house31,I,Fridge,I,0.0075,0.8225,0.0075,0.1625,True
+634,house31,I,Fridge,RLC,0.1625,0.37,0.0025,0.465,False
+635,house31,I,Fridge,RLC,0.16,0.3825,0.0025,0.455,False
+636,house31,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+637,house31,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+638,house31,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+639,house31,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+640,house31,R,Hairdryer,R,1.0,0.0,0.0,0.0,True
+641,house31,RC,Laptop,RC,0.0475,0.1875,0.6075,0.1575,True
+642,house31,RC,Laptop,RC,0.0675,0.2275,0.565,0.14,True
+643,house31,RC,Laptop,RC,0.0575,0.2,0.5925,0.15,True
+644,house31,RC,Laptop,RC,0.0575,0.2,0.6075,0.135,True
+645,house31,RC,Laptop,RC,0.055,0.205,0.5925,0.1475,True
+646,house31,RLC,Microwave,RLC,0.0,0.0025,0.0,0.9975,True
+647,house31,RLC,Microwave,RLC,0.015,0.005,0.01,0.97,True
+648,house31,RLC,Microwave,RLC,0.005,0.0025,0.005,0.9875,True
+649,house31,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+650,house31,RLC,Microwave,RLC,0.0025,0.0,0.0,0.9975,True
+846,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+847,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+848,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+849,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,0.9975,0.0025,True
+850,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+851,house41,RC,Compact Fluorescent Lamp,RC,0.0125,0.04,0.9225,0.025,True
+852,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+853,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+854,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+855,house41,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+933,house48,I,Fridge,I,0.1125,0.5275,0.085,0.275,True
+934,house48,R,Hairdryer,R,0.955,0.035,0.0,0.01,True
+935,house48,R,Hairdryer,R,0.6075,0.14,0.005,0.2475,True
+936,house48,R,Hairdryer,R,0.615,0.14,0.0025,0.2425,True
+937,house48,R,Hairdryer,R,0.615,0.145,0.0025,0.2375,True
+938,house48,R,Hairdryer,R,0.64,0.1175,0.005,0.2375,True
+939,house48,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+940,house48,RC,Laptop,RC,0.0025,0.0,0.9975,0.0,True
+941,house48,RC,Laptop,RC,0.0025,0.0,0.9975,0.0,True
+942,house48,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+943,house48,RC,Laptop,RC,0.0025,0.0,0.9975,0.0,True
+944,house49,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+945,house49,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+946,house49,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+947,house49,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+948,house49,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+949,house49,RC,Compact Fluorescent Lamp,RC,0.0,0.0,1.0,0.0,True
+950,house49,I,Fridge,RLC,0.03,0.25,0.0125,0.7075,False
+951,house49,R,Hairdryer,R,0.9825,0.005,0.0,0.0125,True
+952,house49,R,Hairdryer,R,0.9825,0.01,0.0,0.0075,True
+953,house49,R,Hairdryer,R,0.99,0.005,0.0,0.005,True
+954,house49,R,Hairdryer,R,0.9825,0.0075,0.0,0.01,True
+955,house49,R,Hairdryer,R,0.97,0.005,0.0,0.025,True
+956,house49,RC,Laptop,RC,0.005,0.015,0.9625,0.0175,True
+957,house49,RC,Laptop,RC,0.0025,0.0275,0.9425,0.0275,True
+958,house49,RC,Laptop,RC,0.01,0.16,0.76,0.07,True
+959,house49,RC,Laptop,RC,0.005,0.0275,0.95,0.0175,True
+960,house49,RC,Laptop,RC,0.0,0.005,0.975,0.02,True
+961,house49,RLC,Microwave,RLC,0.005,0.0075,0.0025,0.985,True
+962,house49,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+963,house49,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+964,house49,RLC,Microwave,RLC,0.0,0.0025,0.0,0.9975,True
+965,house49,RLC,Microwave,RLC,0.0,0.0,0.0,1.0,True
+966,house49,I,Vacuum,I,0.04,0.8125,0.0025,0.145,True
+967,house49,I,Vacuum,I,0.0575,0.6575,0.0275,0.2575,True
+968,house49,I,Vacuum,I,0.025,0.86,0.005,0.11,True
+969,house49,I,Vacuum,I,0.02,0.85,0.005,0.125,True
+970,house49,I,Vacuum,I,0.0225,0.8625,0.0025,0.1125,True
+1006,house52,RLC,Air Conditioner,RLC,0.0175,0.22,0.065,0.6975,True
+1007,house52,RLC,Air Conditioner,RLC,0.02,0.255,0.08,0.645,True
+1008,house52,RLC,Air Conditioner,RLC,0.0225,0.2275,0.115,0.635,True
+1009,house52,RLC,Air Conditioner,RLC,0.0225,0.2425,0.105,0.63,True
+1010,house52,RLC,Air Conditioner,RLC,0.0125,0.2525,0.075,0.66,True
+1011,house52,I,Fridge,I,0.0175,0.55,0.045,0.3875,True
+1012,house52,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+1013,house52,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+1014,house52,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+1015,house52,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+1016,house52,RC,Laptop,RC,0.0,0.0,1.0,0.0,True
+1017,house52,RLC,Microwave,RLC,0.01,0.0425,0.0325,0.915,True
+1018,house52,RLC,Microwave,RLC,0.0025,0.03,0.02,0.9475,True
+1019,house52,RLC,Microwave,RLC,0.0,0.015,0.005,0.98,True
+1020,house52,RLC,Microwave,RLC,0.0,0.0175,0.0125,0.97,True
+1021,house52,RLC,Microwave,RLC,0.0,0.015,0.005,0.98,True

@@ -4,14 +4,16 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "electrical-load-classifier"
-version = "0.1.0"
-description = "Two-head MLP baseline for electrical load classification"
+version = "0.2.0"
+description = "House-grouped classification of timestamped electrical load recordings"
 requires-python = ">=3.12"
 dependencies = [
     "numpy>=2,<3",
     "pandas>=2.2,<3",
-    "openpyxl>=3.1,<4",
     "matplotlib>=3.9,<4",
+    "scikit-learn>=1.8,<1.9",
+    "joblib>=1.5,<2",
+    "threadpoolctl>=3.6,<4",
 ]
 
 [project.optional-dependencies]

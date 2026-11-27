@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "sample_id": "Academic_2017-02-10",
+  "date": "2017-02-10",
+  "predicted": "Academic",
+  "raw_minutes": 1440,
+  "checks": [
+    "anonymous filename inference command",
+    "all raw-derived features match saved daily features",
+    "prediction matches frozen test record"
+  ]
+}

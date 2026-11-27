@@ -1,0 +1,6 @@
+data/raw/
+__pycache__/
+.venv/
+workbook_previews/
+node_modules/
+*.inspect.ndjson

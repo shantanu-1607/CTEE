@@ -1,0 +1,11 @@
+{
+  "drive_folder_url": "https://drive.google.com/drive/folders/1_aO3gFYwigITWH0YmCPAoB48wRg2B5mF",
+  "drive_file_id": "1EihrOMdMkTDTsKAp37mTDrSCtwOvw5gG",
+  "drive_file_url": "https://drive.google.com/file/d/1EihrOMdMkTDTsKAp37mTDrSCtwOvw5gG/view",
+  "raw_csv_name": "all_features.csv",
+  "raw_csv_bytes": 214166054,
+  "raw_csv_sha256": "5fee755b96b19de6cec432896828ac24cbcaf7866bde3df73f9551c2e24f69a4",
+  "metadata_name": "meta_labeled.json",
+  "labels": ["R", "I", "RC", "RLC"],
+  "notes": "Labels were supplied in the user's JSON. Drive contains precomputed electrical features in time windows, not raw waveforms. The extractor code and label derivation were not supplied. Original PLAID information is context only; no independently downloaded waveform version is substituted."
+}

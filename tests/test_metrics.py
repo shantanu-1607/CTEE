@@ -1,28 +1,26 @@
 import numpy as np
 import pytest
 
-from load_classifier.metrics import classification_scores, score
+from load_classifier.metrics import classification_scores, house_bootstrap
 
 
-def test_confusion_and_macro_f1_by_hand():
-    targets = np.array([0, 0, 1, 1, 2, 2])
-    probabilities = np.eye(3)[[0, 1, 1, 1, 0, 2]]
-    metrics = classification_scores(targets, probabilities, ("a", "b", "c"))
-    assert metrics["confusion_matrix"] == [[1, 1, 0], [0, 2, 0], [1, 0, 1]]
-    assert metrics["accuracy"] == 4 / 6
-    assert metrics["macro_f1"] == pytest.approx((.5 + .8 + 2 / 3) / 3)
+def test_metrics_recount_a_known_confusion_matrix():
+    actual = ["R", "R", "I", "I", "RC", "RC", "RLC", "RLC"]
+    predicted = ["R", "I", "I", "I", "RC", "RLC", "RC", "RLC"]
+    result = classification_scores(actual, predicted)
+    assert result["correct"] == 5
+    assert result["accuracy"] == 5 / 8
+    assert result["confusion_matrix"] == [[1, 1, 0, 0], [0, 2, 0, 0], [0, 0, 1, 1], [0, 0, 1, 1]]
+    assert result["macro_f1"] == pytest.approx((2 / 3 + 4 / 5 + .5 + .5) / 4)
 
 
-def test_joint_accuracy_requires_both_answers_on_same_row():
-    behaviour = np.array([0, 1, 2, 0])
-    circuit = np.array([0, 1, 2, 3])
-    probabilities = {"behaviour": np.eye(3)[[0, 1, 1, 0]], "circuit": np.eye(7)[[0, 0, 2, 3]]}
-    metrics = score(behaviour, circuit, probabilities)
-    assert metrics["behaviour"]["accuracy"] == .75
-    assert metrics["circuit"]["accuracy"] == .75
-    assert metrics["joint_accuracy"] == .5
+def test_bootstrap_resamples_entire_houses():
+    result = house_bootstrap(["R", "I", "RC", "RLC"], ["R", "I", "R", "R"],
+                             ["a", "a", "b", "b"], repetitions=500)
+    assert result["houses"] == 2
+    assert result["accuracy_95_percent"] == [0, 1]
 
 
-def test_invalid_probabilities_are_rejected():
-    with pytest.raises(ValueError):
-        classification_scores(np.array([0]), np.array([[.8, .8]]), ("a", "b"))
+def test_unknown_labels_are_rejected():
+    with pytest.raises(ValueError, match="Unknown"):
+        classification_scores(["L"], ["I"])

@@ -1,0 +1,83 @@
+{
+  "model": "extra_trees_half",
+  "recordings": 859,
+  "houses": 43,
+  "features": 184,
+  "fit_seconds": 0.5666480000363663,
+  "test_used_for_training": false,
+  "fitted_input_count": 248,
+  "apparent_training_metrics": {
+    "recordings": 859,
+    "correct": 859,
+    "accuracy": 1.0,
+    "balanced_accuracy": 1.0,
+    "macro_f1": 1.0,
+    "weighted_f1": 1.0,
+    "per_class": {
+      "R": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 245.0
+      },
+      "I": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 151.0
+      },
+      "RC": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 279.0
+      },
+      "RLC": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 184.0
+      }
+    },
+    "confusion_matrix": [
+      [
+        245,
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        151,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        279,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        184
+      ]
+    ],
+    "labels": [
+      "R",
+      "I",
+      "RC",
+      "RLC"
+    ]
+  },
+  "model_sha256": "8091df8e8fe4d8cbfdce5ba6952f383d48f830cb807614ef7da7a71b493f9409",
+  "selection_sha256": "fd6662739aeb602a7b1af44b62b1044f5b9fccc1b32c49d775d08a001e62b714",
+  "input_fingerprint": {
+    "raw_csv_sha256": "5fee755b96b19de6cec432896828ac24cbcaf7866bde3df73f9551c2e24f69a4",
+    "metadata_sha256": "9fc0ccf4b45ded6ee2db76cebee3f856774d76b43355cb06fbd7f287f980b37b",
+    "recordings_sha256": "aa07587f680c2229a91bcbd4b28d0625c1388e6ee9dc771f82ded2ea6a27c3f4",
+    "splits_sha256": "9a71dad5677cb8f0b1ebcded2108785273d30faa76f7d12ba72e05f9e3705d94"
+  }
+}

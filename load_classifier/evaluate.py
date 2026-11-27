@@ -1,164 +1,207 @@
-"""Evaluate a frozen checkpoint and export the predictions behind every score."""
+"""Evaluate once on the reserved houses, and export a readable result report."""
+
 import json
-import os
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+from threadpoolctl import threadpool_limits
 
-from .data import BEHAVIOURS, CIRCUITS, arrays, file_hash
-from .metrics import score
-from .model import TwoHeadMLP
-
-
-def prediction_table(data, probabilities):
-    result = data[[name for name in ("sample_id", "condition", "behaviour", "circuit")
-                   if name in data]].copy()
-    for head, labels in (("behaviour", BEHAVIOURS), ("circuit", CIRCUITS)):
-        values = probabilities[head]
-        result[f"predicted_{head}"] = np.array(labels)[values.argmax(axis=1)]
-        for i, label in enumerate(labels):
-            result[f"p_{head}_{label}"] = values[:, i]
-        if head in data:
-            result[f"{head}_correct"] = result[head] == result[f"predicted_{head}"]
-    if {"behaviour", "circuit"} <= set(data):
-        result["joint_correct"] = result["behaviour_correct"] & result["circuit_correct"]
-    return result
+from .data import LABELS, file_hash, write_json
+from .experiment import input_fingerprint, load_prepared
+from .metrics import classification_scores, house_bootstrap
+from .predict import load_bundle, predict_records
 
 
-def make_plots(output, metrics, history, best_epoch):
-    os.environ.setdefault("MPLCONFIGDIR", str(Path(".cache/matplotlib").resolve()))
-    import matplotlib
-    matplotlib.use("Agg")
-    import matplotlib.pyplot as plt
-
-    plt.rcParams.update({"font.size": 10, "axes.spines.top": False, "axes.spines.right": False})
-    fig, axes = plt.subplots(1, 2, figsize=(10, 4), constrained_layout=True)
-    axes[0].plot(history["epoch"], history["training_loss"], label="Training")
-    axes[0].plot(history["epoch"], history["validation_loss"], label="Validation")
-    axes[0].axvline(best_epoch, color="0.5", linestyle="--", label="Saved epoch")
-    axes[0].set(xlabel="Epoch", ylabel="Sum of cross-entropy losses", title="Learning curves")
-    axes[0].legend()
-    for column, label in (("validation_behaviour_accuracy", "Behaviour"),
-                          ("validation_circuit_accuracy", "Circuit"),
-                          ("validation_joint_accuracy", "Both correct")):
-        axes[1].plot(history["epoch"], history[column] * 100, label=label)
-    axes[1].set(xlabel="Epoch", ylabel="Accuracy (%)", ylim=(0, 101), title="Validation accuracy")
-    axes[1].legend()
-    fig.savefig(output / "learning_curves.png", dpi=160)
+def plot_results(run, metrics, comparison):
+    fig, axes = plt.subplots(1, 2, figsize=(12, 4.8), layout="constrained")
+    matrix = np.asarray(metrics["confusion_matrix"])
+    axes[0].imshow(matrix, cmap="Blues", vmin=0)
+    axes[0].set(xticks=range(4), yticks=range(4), xticklabels=LABELS, yticklabels=LABELS,
+                xlabel="Predicted load", ylabel="Actual load", title="Test recordings from unseen houses")
+    for (i, j), count in np.ndenumerate(matrix):
+        axes[0].text(j, i, str(count), ha="center", va="center",
+                     color="white" if count > matrix.max() / 2 else "black")
+    for column, offset in (("precision", -.23), ("recall", 0), ("f1-score", .23)):
+        axes[1].bar(np.arange(4) + offset, [metrics["per_class"][k][column] for k in LABELS],
+                    width=.23, label=column.replace("-score", ""))
+    axes[1].set(xticks=range(4), xticklabels=LABELS, ylim=(0, 1.08),
+                title="Per-class test results", ylabel="Score")
+    axes[1].legend(loc="lower right")
+    fig.savefig(run / "test_results.png", dpi=180)
     plt.close(fig)
-
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4.6), constrained_layout=True)
-    for ax, head in zip(axes, ("behaviour", "circuit")):
-        labels = metrics["test"][head]["labels"]
-        matrix = np.array(metrics["test"][head]["confusion_matrix"])
-        ax.imshow(matrix, cmap="Blues")
-        ax.set(xticks=range(len(labels)), yticks=range(len(labels)), xticklabels=labels,
-               yticklabels=labels, xlabel="Predicted", ylabel="Actual", title=f"Test: {head}")
-        for row, col in np.ndindex(matrix.shape):
-            ax.text(col, row, str(matrix[row, col]), ha="center", va="center",
-                    color="white" if matrix[row, col] > matrix.max() / 2 else "black", fontsize=9)
-    fig.savefig(output / "confusion_matrices.png", dpi=160)
+    table = comparison.sort_values("macro_f1_mean")
+    fig, ax = plt.subplots(figsize=(9, 5), layout="constrained")
+    ax.barh(table.model, table.macro_f1_mean, xerr=table.macro_f1_std, color="#3879a8", capsize=3)
+    ax.set(xlim=(0, 1.05), xlabel="Mean macro-F1 (error bars: standard deviation across four folds)",
+           title="Classifier comparison on development houses")
+    fig.savefig(run / "model_comparison.png", dpi=180)
     plt.close(fig)
 
 
-def write_report(output, results, training):
-    lines = ["# Baseline test results", "",
-        "One shared MLP predicts behaviour and circuit type from 19 distinct measurements.",
-        "The test partition was evaluated after training and validation checkpoint selection.", "",
-        "| Partition | Rows | Behaviour accuracy | Circuit accuracy | Both correct |",
-        "|---|---:|---:|---:|---:|"]
-    for name in ("train", "validation", "test"):
-        row = results[name]
-        lines.append(f"| {name.title()} | {row['rows']:,} | {row['behaviour']['accuracy']:.2%} | "
-                     f"{row['circuit']['accuracy']:.2%} | {row['joint_accuracy']:.2%} |")
-    lines += ["", "## Test conditions", "",
-        "| Condition | Rows | Behaviour accuracy | Circuit accuracy | Both correct |",
-        "|---|---:|---:|---:|---:|"]
-    for name, row in results["test_conditions"].items():
-        lines.append(f"| {name.title()} | {row['rows']:,} | {row['behaviour']['accuracy']:.2%} | "
-                     f"{row['circuit']['accuracy']:.2%} | {row['joint_accuracy']:.2%} |")
-    test = results["test"]
-    lines += ["", f"Both labels match on **{test['joint_correct']:,}/{test['rows']:,}** test examples.",
-        f"Macro-F1: behaviour **{test['behaviour']['macro_f1']:.4f}**, "
-        f"circuit **{test['circuit']['macro_f1']:.4f}**."]
-    for head in ("behaviour", "circuit"):
-        lines += ["", f"## {head.title()} classes on test", "",
-            "| Class | Precision | Recall | F1 | Support |", "|---|---:|---:|---:|---:|"]
-        for label, values in test[head]["per_class"].items():
-            lines.append(f"| {label} | {values['precision']:.4f} | {values['recall']:.4f} | "
-                         f"{values['f1']:.4f} | {values['support']} |")
-    widths = " → ".join(str(n) for n in (len(training["features"]), *training["config"]["hidden_sizes"]))
-    lines += ["", "## Training", "",
-        f"- Architecture: {widths}, followed by separate 3-class and 7-class softmax heads.",
-        f"- Trainable parameters: {training['parameter_count']:,}.",
-        f"- Training/split seed: {training['config']['seed']} / 42.",
-        f"- Saved epoch: {training['best_epoch']} of {training['epochs_completed']} completed epochs.",
-        f"- Selection: {training['selection']}.",
-        "- ReLU hidden layers; Adam; equally weighted behaviour and circuit cross-entropy.",
-        f"- Learning rate {training['config']['learning_rate']}; batch size {training['config']['batch_size']}; "
-        f"L2 coefficient {training['config']['l2']}.",
-        "- Standardization is fitted on training rows only. No resampling, feature engineering or ensemble.",
-        "- History losses exclude the training-only L2 term, so training/validation curves are comparable.",
-        "", "## Interpretation and next experiments", "",
-        "This is a starting measurement, not an optimized classifier. Keep the split fixed and use",
-        "validation results for future feature and model choices. Do not tune against this test report.",
-        "Compare voltage/current/power sweep ratios or slopes, removal of redundant measurement groups,",
-        "and small network-size or training-setting changes. Compare other classifiers only after the",
-        "neural baseline is fixed. Repeat promising experiments with several training seeds.", "",
-        "The circuit head may confuse circuits with similar available measurements. The workbook has",
-        "aggregate distortion features, not full harmonic impedance or transient measurements. Higher",
-        "scores are not guaranteed from model size alone.", "",
-        "These are simulated labelled loads informed by real load-profile values. The workbook defines",
-        "CC/CP/CZ as dominant ZIP behaviour. Source keys are unique, but physical circuit IDs and the",
-        "generator are unavailable, so physical independence and real-appliance performance are not established.",
-        "Normal and tough test subsets come from the same two condition families used during training;",
-        "this is not a test on a completely unseen condition family.", "",
-        "![Training and validation](learning_curves.png)", "",
-        "![Test confusion matrices](confusion_matrices.png)", "",
-        "Exact scores and confusion matrices: [metrics.json](metrics.json).",
-        "Every test prediction and class probability: [test_predictions.csv](test_predictions.csv).", "",
-        "## Provenance", "",
-        f"- Workbook SHA-256: `{training['workbook_sha256']}`",
-        f"- Split SHA-256: `{training['splits_sha256']}`",
-        f"- Checkpoint SHA-256: `{training['checkpoint_sha256']}`", ""]
-    (output / "report.md").write_text("\n".join(lines))
+def write_report(run, audit, selection, metrics, comparison):
+    test = metrics["test"]
+    confidence = metrics["house_bootstrap"]
+    training = json.loads((run / "training.json").read_text())
+    predictions = pd.read_csv(run / "test_predictions.csv")
+    missing_types = sorted(set(audit["appliance_to_load"]) - set(predictions.appliance_type))
+    lines = ["# Timestamped load classification results", "",
+             f"Selected classifier: **{selection['selected_model']}**. One prediction per complete recording.", "",
+             f"Test accuracy: **{test['accuracy']:.2%}** ({test['correct']}/{test['recordings']}). "
+             f"Macro-F1: **{test['macro_f1']:.4f}**. Balanced accuracy: **{test['balanced_accuracy']:.2%}**.", "",
+             f"These test recordings come from {confidence['houses']} houses absent from training and model selection.", "",
+             "The majority-class test baseline is "
+             f"{metrics['majority_baseline']['accuracy']:.2%}. "
+             f"Apparent training accuracy is {training['apparent_training_metrics']['accuracy']:.2%}; "
+             "it is not a generalization score. All test mistakes are preserved in the prediction export.", "",
+             "## Test classes", "", "| Load | Precision | Recall | F1 | Recordings |",
+             "| --- | ---: | ---: | ---: | ---: |"]
+    for label in LABELS:
+        row = test["per_class"][label]
+        lines.append(f"| {label} | {row['precision']:.4f} | {row['recall']:.4f} | {row['f1-score']:.4f} | {int(row['support'])} |")
+    lines += ["", "## Model selection", "", "Test data was not used to rank or tune models. "
+              "The table reports four-fold cross-validation on development houses. Preprocessing was fitted separately inside each training fold.", "",
+              "| Classifier | Mean macro-F1 | Fold SD | Mean accuracy |", "| --- | ---: | ---: | ---: |"]
+    for row in comparison.itertuples():
+        lines.append(f"| {row.model} | {row.macro_f1_mean:.4f} | {row.macro_f1_std:.4f} | {row.accuracy_mean:.2%} |")
+    ablation = selection["ablation"]
+    lines += ["", "## Using time", "",
+              "The model receives 23 electrical measurements summarized eight ways: 10th percentile, median, "
+              "90th percentile, interquartile range, early-window median, late-window median, slope per second, "
+              "and median absolute adjacent change per second. Early and late mean the first and last 20% of elapsed time. "
+              "Windows are sorted by their timestamps. This gives 184 inputs per recording.", "",
+              f"The fitted preprocessing produces {training['fitted_input_count']} numeric columns after adding "
+              "training-observed missing-value indicators. These columns are available to the fitted classifier. "
+              "`feature_importance.csv` records training-based impurity importances. These are descriptive, "
+              "can be affected by correlated inputs, and do not establish causation.", "",
+              f"For the selected classifier, median-only development CV macro-F1 was {ablation['median_only_macro_f1_mean']:.4f}; "
+              f"the temporal summaries scored {ablation['temporal_macro_f1_mean']:.4f}. "
+              "This ablation compares complete feature sets; it does not isolate timestamps from distribution summaries.", "",
+              "## Uncertainty and limitations", "",
+              f"A whole-house bootstrap (2,000 resamples) gives an approximate 95% accuracy interval of "
+              f"{confidence['accuracy_95_percent'][0]:.2%}–{confidence['accuracy_95_percent'][1]:.2%}, and "
+              f"macro-F1 interval {confidence['macro_f1_95_percent'][0]:.4f}–{confidence['macro_f1_95_percent'][1]:.4f}. "
+              "This is conditional on the selected model and these held-out houses; it does not include model-selection or label uncertainty.", "",
+              "- The supplied labels are R, I, RC and RLC. I is preserved verbatim. No CC/CP/CZ target exists in this dataset.",
+              "- Each appliance type maps to a single supplied load label. Scores measure agreement with these annotations, "
+              "not independent verification of a physical equivalent circuit. Appliance type is never a predictor.",
+              "- Source JSON warns that some recordings are not well calibrated. The feature-extraction code and raw waveforms "
+              "for the Drive CSVs were not supplied; electrical feature formulas cannot be independently certified here.",
+              "- Recording ID, appliance name, load, house, collection date, window count and recording duration are excluded as predictors. "
+              "Time is used for changes within each recording, not calendar forecasting.",
+              "- Missing harmonic summaries are imputed from training data only. Equivalent L/C columns and redundant derived columns are omitted.",
+              "- This is an offline recording classifier. It does not identify multiple simultaneous appliances, unseen load classes, "
+              "or prove generalization outside this collection. Reported probabilities are uncalibrated model outputs.",
+              "- House grouping prevents known within-house overlap. The metadata has no physical appliance ID to verify independence across houses.",
+              f"- There are {audit['duplicate_summary_excess_recordings']} excess exact-duplicate summary rows in "
+              f"{len(audit['exact_duplicate_summary_groups'])} duplicate groups. Houses connected by these summaries "
+              "stay together in development validation; no duplicate group crosses the test boundary. "
+              "Original recording IDs are retained for traceability.",
+              f"- The test set contains {predictions.appliance_type.nunique()} of "
+              f"{len(audit['appliance_to_load'])} appliance types. Types with zero test support: "
+              f"{', '.join(missing_types) or 'none'}. Their type-specific test performance is not established. "
+              "All four load labels are present in test.",
+              "- The previous workbook results describe a different dataset and must not be compared as an improvement or regression.",
+              "", "## Files", "", "`test_predictions.csv` contains every test answer and class probability. "
+              "`test_metrics.json` stores exact counts, per-house results, confidence intervals and the majority baseline. "
+              "`cv_predictions.csv` contains development-only out-of-fold predictions for all candidates. "
+              "`model.joblib` contains the fitted preprocessing pipeline and classifier.", ""]
+    lines += ["## Test errors and appliance coverage", "",
+              "| Appliance type | Test recordings | Correct |", "| --- | ---: | ---: |"]
+    all_types = sorted(audit["appliance_to_load"])
+    for name in all_types:
+        part = predictions[predictions.appliance_type.eq(name)]
+        lines.append(f"| {name} | {len(part)} | {int(part.correct.sum())} |")
+    mistakes = predictions[~predictions.correct]
+    lines += ["", f"There were {len(mistakes)} mistakes.", "",
+              "| Appliance type | Actual load | Predicted load | Mistakes |", "| --- | --- | --- | ---: |"]
+    for (name, actual, predicted), part in mistakes.groupby(["appliance_type", "actual_load", "predicted_load"]):
+        lines.append(f"| {name} | {actual} | {predicted} | {len(part)} |")
+    lines += ["", "These are observations about saved test errors. They were not used to retune the model.", ""]
+    if (run / "protocol_notes.md").exists():
+        lines += [(run / "protocol_notes.md").read_text(), ""]
+    (run / "report.md").write_text("\n".join(lines))
 
 
-def evaluate_run(data, output, workbook, split_path):
-    output = Path(output)
-    model, embedded = TwoHeadMLP.load(output / "model.npz")
-    training = json.loads((output / "training.json").read_text())
-    checks = (("workbook_sha256", workbook), ("splits_sha256", split_path),
-              ("checkpoint_sha256", output / "model.npz"))
-    if any(training[key] != file_hash(path) for key, path in checks):
-        raise ValueError("Dataset, split or checkpoint changed since training")
-    if any(embedded[key] != training[key] for key in embedded):
-        raise ValueError("Training record differs from checkpoint metadata")
-    results = {}
-    test_probabilities = None
-    for split in ("train", "validation", "test"):
-        subset = data[data["split"] == split]
-        x, behaviour, circuit = arrays(subset, model.features)
-        probabilities = model.predict_proba(x)
-        results[split] = score(behaviour, circuit, probabilities)
-        if split == "test":
-            test_probabilities = probabilities
-    test = data[data["split"] == "test"]
-    results["test_conditions"] = {}
-    for condition in ("normal", "tough"):
-        mask = (test["condition"] == condition).to_numpy()
-        _, behaviour, circuit = arrays(test[mask], model.features)
-        results["test_conditions"][condition] = score(behaviour, circuit,
-            {head: values[mask] for head, values in test_probabilities.items()})
-    results["provenance"] = {key: training[key] for key, _ in checks}
-    metrics_path = output / "metrics.json"
-    if metrics_path.exists() and json.loads(metrics_path.read_text()) != results:
-        raise ValueError("Existing results differ; preserve this run and investigate")
-    metrics_path.write_text(json.dumps(results, indent=2) + "\n")
-    prediction_table(test, test_probabilities).to_csv(output / "test_predictions.csv", index=False)
-    make_plots(output, results, pd.read_csv(output / "history.csv"), training["best_epoch"])
-    write_report(output, results, training)
-    print(f"Test: behaviour {results['test']['behaviour']['accuracy']:.2%}, circuit "
-          f"{results['test']['circuit']['accuracy']:.2%}, both {results['test']['joint_accuracy']:.2%}")
-    return results
+def evaluate(directory, run):
+    run = Path(run)
+    if (run / "test_metrics.json").exists():
+        raise FileExistsError("This run has already been evaluated; use verify to check saved results")
+    records, audit = load_prepared(directory)
+    selection = json.loads((run / "selection.json").read_text())
+    training = json.loads((run / "training.json").read_text())
+    if file_hash(run / "model.joblib") != training["model_sha256"]:
+        raise ValueError("Model changed after training")
+    bundle = load_bundle(run / "model.joblib")
+    if bundle["input_fingerprint"] != input_fingerprint(audit):
+        raise ValueError("Inputs changed after training")
+    if bundle["selection_sha256"] != file_hash(run / "selection.json"):
+        raise ValueError("Selection changed after training")
+    test = records[records.partition.eq("test")].copy()
+    with threadpool_limits(limits=1):
+        predictions = predict_records(bundle, test)
+    output = test[["id", "location", "load", "appliance_type"]].merge(predictions, on="id", validate="one_to_one")
+    output = output.rename(columns={"load": "actual_load"})
+    output["correct"] = output.actual_load.eq(output.predicted_load)
+    output.to_csv(run / "test_predictions.csv", index=False)
+    majority = records.loc[records.partition.eq("development"), "load"].mode().iloc[0]
+    metrics = {
+        "selected_model": bundle["selected_model"], "test": classification_scores(output.actual_load, output.predicted_load),
+        "majority_baseline": classification_scores(output.actual_load, np.repeat(majority, len(output))),
+        "house_bootstrap": house_bootstrap(output.actual_load, output.predicted_load, output.location),
+        "per_house": {house: classification_scores(part.actual_load, part.predicted_load)
+                      for house, part in output.groupby("location")},
+        "model_sha256": file_hash(run / "model.joblib"),
+        "test_predictions_sha256": file_hash(run / "test_predictions.csv"),
+        "input_fingerprint": input_fingerprint(audit),
+    }
+    write_json(run / "test_metrics.json", metrics)
+    comparison = pd.read_csv(run / "comparison.csv")
+    plot_results(run, metrics["test"], comparison)
+    write_report(run, audit, selection, metrics, comparison)
+    return metrics
+
+
+def verify(directory, run):
+    """Read-only replay and independent recount; never retrain or select on test data."""
+    run = Path(run)
+    records, audit = load_prepared(directory)
+    metrics = json.loads((run / "test_metrics.json").read_text())
+    training = json.loads((run / "training.json").read_text())
+    selection = json.loads((run / "selection.json").read_text())
+    if file_hash(run / "model.joblib") != metrics["model_sha256"]:
+        raise ValueError("Model hash differs from the evaluated model")
+    if file_hash(run / "test_predictions.csv") != metrics["test_predictions_sha256"]:
+        raise ValueError("Prediction export changed after evaluation")
+    if metrics["input_fingerprint"] != input_fingerprint(audit):
+        raise ValueError("Input data changed after evaluation")
+    bundle = load_bundle(run / "model.joblib")
+    if (bundle["selection_sha256"] != file_hash(run / "selection.json")
+            or training["selection_sha256"] != bundle["selection_sha256"]
+            or training["model_sha256"] != metrics["model_sha256"]
+            or file_hash(run / "comparison.csv") != selection["comparison_sha256"]):
+        raise ValueError("Training or selection records changed after evaluation")
+    saved = pd.read_csv(run / "test_predictions.csv")
+    test = records[records.partition.eq("test")]
+    expected = test[["id", "load", "location"]].sort_values("id").reset_index(drop=True)
+    actual = saved[["id", "actual_load", "location"]].rename(columns={"actual_load": "load"})
+    pd.testing.assert_frame_equal(expected, actual.sort_values("id").reset_index(drop=True))
+    recount = classification_scores(saved.actual_load, saved.predicted_load)
+    for key in ("recordings", "correct", "confusion_matrix", "labels"):
+        if recount[key] != metrics["test"][key]:
+            raise ValueError("Exported predictions do not reproduce the test counts")
+    for key in ("accuracy", "balanced_accuracy", "macro_f1", "weighted_f1"):
+        if not np.isclose(recount[key], metrics["test"][key], atol=1e-12, rtol=0):
+            raise ValueError("Exported predictions do not reproduce the test scores")
+    for label in LABELS:
+        for key, value in recount["per_class"][label].items():
+            if not np.isclose(value, metrics["test"]["per_class"][label][key], atol=1e-12, rtol=0):
+                raise ValueError("Exported predictions do not reproduce per-class scores")
+    replay = predict_records(bundle, test)
+    pd.testing.assert_frame_equal(saved[replay.columns].reset_index(drop=True), replay.reset_index(drop=True), rtol=1e-12, atol=1e-12)
+    return {"passed": True, "checks": ["input hashes", "house separation", "test coverage and targets",
+            "model hash", "selection hashes", "prediction hash", "exact count and metric recount", "saved model inference replay"],
+            "test_recordings": len(saved)}

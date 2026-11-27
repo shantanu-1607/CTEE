@@ -1,48 +1,95 @@
+import numpy as np
 import pandas as pd
 import pytest
 
-from load_classifier.data import FEATURES, apply_splits, arrays, make_splits, read_dataset
+from load_classifier.data import (LABELS, duplicate_groups, make_splits, read_metadata,
+                                 validate_splits, validate_windows)
+from load_classifier.features import FEATURE_NAMES
+from load_classifier.experiment import load_prepared
 
 
-@pytest.fixture(scope="module")
-def dataset():
-    return read_dataset()
+def test_duplicate_windows_are_rejected(windows):
+    with pytest.raises(ValueError, match="Duplicate"):
+        validate_windows(pd.concat([windows, windows.iloc[:1]]))
 
 
-def test_final_dataset_and_stratified_split(dataset):
-    assert len(dataset) == 16800
-    assert len(FEATURES) == 19
-    assert dataset.groupby(["behaviour", "circuit", "condition"]).size().eq(400).all()
-    manifest = make_splits(dataset)
-    pd.testing.assert_frame_equal(manifest, pd.read_csv("data/splits.csv"))
-    prepared = apply_splits(dataset, manifest)
-    assert prepared["split"].value_counts().to_dict() == {"train": 11760, "validation": 2520, "test": 2520}
-    for name, expected in (("train", 280), ("validation", 60), ("test", 60)):
-        subset = prepared[prepared["split"] == name]
-        assert subset.groupby(["behaviour", "circuit", "condition"]).size().eq(expected).all()
-    assert prepared["sample_id"].is_unique
-
-
-def test_row_order_does_not_change_saved_split_membership(dataset):
-    manifest = make_splits(dataset)
-    shuffled = dataset.sample(frac=1, random_state=13).reset_index(drop=True)
-    actual = apply_splits(shuffled, manifest).set_index("sample_id")["split"].sort_index()
-    expected = manifest.set_index("sample_id")["split"].sort_index()
-    pd.testing.assert_series_equal(actual, expected)
-
-
-def test_metadata_and_labels_cannot_be_selected_as_inputs(dataset):
-    x, behaviour, circuit = arrays(dataset.iloc[:10])
-    assert x.shape == (10, 19)
-    assert behaviour.shape == circuit.shape == (10,)
-    for forbidden in ("sample_id", "behaviour", "circuit", "condition"):
-        with pytest.raises(ValueError):
-            arrays(dataset, (forbidden,))
-
-
-def test_missing_and_duplicate_split_assignments_are_rejected(dataset):
-    manifest = make_splits(dataset)
+@pytest.mark.parametrize("column,value", [("t_start_s", np.nan), ("start_sample", .5), ("i_rms", -1)])
+def test_invalid_inputs_are_rejected(windows, column, value):
+    windows[column] = windows[column].astype(float)
+    windows.loc[0, column] = value
     with pytest.raises(ValueError):
-        apply_splits(dataset, manifest.iloc[:-1])
-    with pytest.raises(ValueError):
-        apply_splits(dataset, pd.concat([manifest, manifest.iloc[:1]]))
+        validate_windows(windows)
+
+
+def test_sample_rate_and_timestamps_must_agree(windows):
+    windows.loc[2, "t_start_s"] += .001
+    with pytest.raises(ValueError, match="sample rate|Timestamps"):
+        validate_windows(windows)
+
+
+def test_overlapping_windows_are_rejected(windows):
+    windows.loc[1, "t_start_s"] = .001
+    with pytest.raises(ValueError, match="Overlapping"):
+        validate_windows(windows)
+
+
+def test_json_labels_are_checked_against_csv(windows):
+    metadata = pd.DataFrame([dict(id=1, location="house1", load="R", appliance_type="Heater", sampling_hz=30000)])
+    windows["load"], windows["location"], windows["appliance_type"] = "RC", "house1", "Heater"
+    with pytest.raises(ValueError, match="load disagrees"):
+        validate_windows(windows, metadata)
+
+
+def test_split_keeps_entire_houses_together():
+    metadata = pd.DataFrame([dict(id=4 * house + label + 1, location=f"house{house}", load=load)
+                             for house in range(25) for label, load in enumerate(LABELS)])
+    manifest = make_splits(metadata)
+    assert manifest.groupby("location").partition.nunique().eq(1).all()
+    development = manifest[manifest.partition.eq("development")]
+    assert development.groupby("location").cv_fold.nunique().eq(1).all()
+    pd.testing.assert_frame_equal(manifest, make_splits(metadata.sample(frac=1, random_state=99)))
+    changed = manifest.copy()
+    test_house = changed.loc[changed.partition.eq("test"), "location"].iloc[0]
+    row = changed.index[changed.location.eq(test_house)][0]
+    changed.loc[row, ["partition", "cv_fold"]] = ["development", 0]
+    with pytest.raises(ValueError, match="house occurs"):
+        validate_splits(metadata, changed)
+
+
+def test_real_prepared_data_covers_the_supplied_json():
+    records, audit = load_prepared("data/processed")
+    metadata = read_metadata("data/meta_labeled.json")
+    assert len(records) == len(metadata) == 1074
+    assert audit["windows"] == 209554
+    assert set(records.id) == set(metadata.id)
+    assert audit["partition_counts"]["test"]["recordings"] == 215
+    assert not set(records.loc[records.partition.eq("test"), "location"]) & set(
+        records.loc[records.partition.eq("development"), "location"])
+    duplicates = records[records.duplicated(list(FEATURE_NAMES), keep=False)]
+    assert set(duplicates.id) == {234, 235, 236, 237, 238, 389, 390, 391, 392, 393}
+    assert duplicates.partition.eq("development").all()
+    assert duplicates.cv_fold.nunique() == 1
+
+
+def test_duplicate_groups_link_houses_transitively_and_reject_conflicting_labels():
+    metadata = pd.DataFrame({"id": [1, 2, 3, 4], "location": ["a", "b", "b", "c"], "load": ["R"] * 4})
+    summaries = pd.DataFrame([{**{name: value for name in FEATURE_NAMES}, "id": i}
+                              for i, value in [(1, 10.), (2, 10.), (3, 20.), (4, 20.)]])
+    groups, pairs = duplicate_groups(metadata, summaries)
+    assert groups.nunique() == 1
+    assert len(pairs) == 2
+    metadata.loc[1, "load"] = "RC"
+    with pytest.raises(ValueError, match="conflicting"):
+        duplicate_groups(metadata, summaries)
+
+
+def test_duplicate_link_cannot_cross_the_reserved_test_boundary():
+    metadata = pd.DataFrame([dict(id=4 * house + label + 1, location=f"house{house}", load=load)
+                             for house in range(25) for label, load in enumerate(LABELS)])
+    original = make_splits(metadata)
+    test_id = original[original.partition.eq("test") & original.load.eq("R")].id.iloc[0]
+    train_id = original[original.partition.eq("development") & original.load.eq("R")].id.iloc[0]
+    summaries = pd.DataFrame([{**{name: float(i) for name in FEATURE_NAMES}, "id": i} for i in metadata.id])
+    summaries.loc[summaries.id.eq(test_id), list(FEATURE_NAMES)] = float(train_id)
+    with pytest.raises(ValueError, match="cross the reserved"):
+        make_splits(metadata, summaries)

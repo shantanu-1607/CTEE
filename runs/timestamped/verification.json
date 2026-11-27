@@ -1,0 +1,86 @@
+{
+  "passed": true,
+  "checks": [
+    "input hashes",
+    "house separation",
+    "test coverage and targets",
+    "model hash",
+    "selection hashes",
+    "prediction hash",
+    "exact count and metric recount",
+    "saved model inference replay"
+  ],
+  "test_recordings": 215,
+  "tests_passed": 20,
+  "raw_data_reproduction": {
+    "recordings.csv": true,
+    "splits.csv": true,
+    "audit.json": true
+  },
+  "training_reproduction": {
+    "selected_model": "extra_trees_half",
+    "cv_metrics_identical": true,
+    "all_cv_class_predictions_identical": true,
+    "all_400_tree_structures_and_values_identical": true,
+    "all_1074_recording_class_predictions_identical": true,
+    "probabilities_absolute_tolerance": 1e-14,
+    "meaning": "unchanged-seed reproducibility, not multi-seed robustness"
+  },
+  "independent_standard_library_recount": {
+    "confusion_matrix": [
+      [
+        57,
+        0,
+        0,
+        3
+      ],
+      [
+        0,
+        30,
+        0,
+        10
+      ],
+      [
+        0,
+        0,
+        68,
+        0
+      ],
+      [
+        0,
+        0,
+        0,
+        47
+      ]
+    ],
+    "correct": 202,
+    "test_recordings": 215,
+    "macro_f1": 0.927501626099757
+  },
+  "model_sha256": "8091df8e8fe4d8cbfdce5ba6952f383d48f830cb807614ef7da7a71b493f9409",
+  "duplicate_input_pairs": [
+    [
+      234,
+      389
+    ],
+    [
+      235,
+      390
+    ],
+    [
+      236,
+      391
+    ],
+    [
+      237,
+      392
+    ],
+    [
+      238,
+      393
+    ]
+  ],
+  "duplicate_required_time_and_measurement_windows_identical": true,
+  "frozen_test_ids_unchanged_after_grouping_fix": true,
+  "plots_visually_reviewed": true
+}
