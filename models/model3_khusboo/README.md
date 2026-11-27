@@ -1,6 +1,6 @@
 # Model 3 — Khusboo building load profiles
 
-**Status after requirement clarification (27 November 2026): this building-recognition experiment does not satisfy the intended Model 3 task.** The required outputs are R, L, C, RL, RC, RLC or LC and circuit operating behaviour. No validated classifier for those outputs has been trained from this ZIP. The 85.07% accuracy below applies only to building identity. See [the circuit-task reassessment](CIRCUIT_TASK_REASSESSMENT.md) before using these artifacts in the project submission. Existing experiment files are retained for traceability.
+**Current objective after the latest user clarification (27 November 2026): seasonal load forecasting and peak / non-peak prediction.** The revised implementation, trained forecasting models, held-out 2017 results, issued forecasts, report and Excel workbook are in [forecasting/](forecasting/README.md). Start there. The building-recognition results below and the [circuit-task reassessment](CIRCUIT_TASK_REASSESSMENT.md) are historical work and do not measure the revised forecasting objective. Existing experiment files are retained for traceability.
 
 This folder is an independent experiment. It adds no changes to Model 1 or Model 2 files. Branch: `codex/model-3-khusboo-buildings`, based on Model 1 commit `d2b3da873a3c350ad11ff19a750469d37ab10bd9`.
 

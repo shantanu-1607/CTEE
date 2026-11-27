@@ -1,0 +1,29 @@
+{
+  "selected": "gradient_boosting",
+  "features": [
+    "hour_sin",
+    "hour_cos",
+    "dow_sin",
+    "dow_cos",
+    "year_sin",
+    "year_cos",
+    "weekend",
+    "lag_1d",
+    "lag_2d",
+    "lag_7d",
+    "lag_14d",
+    "previous_day_mean",
+    "previous_day_std",
+    "previous_day_max",
+    "previous_day_min",
+    "previous_7d_mean",
+    "previous_28d_mean",
+    "building_Academic",
+    "building_Facilities",
+    "building_Mess"
+  ],
+  "validation_mean_macro_building_wape": 0.11919950320432139,
+  "fit_cutoff": "2017-01-01",
+  "development_rows": 79045,
+  "test_rows": 25302
+}

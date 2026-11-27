@@ -1,0 +1,32 @@
+task,feature,unit,availability_definition
+hourly,hour_sin,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,hour_cos,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,dow_sin,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,dow_cos,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,year_sin,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,year_cos,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,weekend,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+hourly,lag_1d,kW,Same target-hour power this many complete days earlier; available before origin midnight
+hourly,lag_2d,kW,Same target-hour power this many complete days earlier; available before origin midnight
+hourly,lag_7d,kW,Same target-hour power this many complete days earlier; available before origin midnight
+hourly,lag_14d,kW,Same target-hour power this many complete days earlier; available before origin midnight
+hourly,previous_day_mean,kW,Statistic of the last completed local day; needs at least 20 valid hours
+hourly,previous_day_std,kW,Statistic of the last completed local day; needs at least 20 valid hours
+hourly,previous_day_max,kW,Statistic of the last completed local day; needs at least 20 valid hours
+hourly,previous_day_min,kW,Statistic of the last completed local day; needs at least 20 valid hours
+hourly,previous_7d_mean,kW,"Mean of completed daily means before origin; at least half the rolling days (floor, minimum 2)"
+hourly,previous_28d_mean,kW,"Mean of completed daily means before origin; at least half the rolling days (floor, minimum 2)"
+hourly,building_Academic,unitless,"Known meter/building indicator, supplied at forecast time"
+hourly,building_Facilities,unitless,"Known meter/building indicator, supplied at forecast time"
+hourly,building_Mess,unitless,"Known meter/building indicator, supplied at forecast time"
+monthly,month_sin,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+monthly,month_cos,unitless,Known target-calendar cyclic sine/cosine or weekend indicator; no measured target-day data
+monthly,horizon,months,"Requested month lead, 1 / 2 / 3, known at origin"
+monthly,previous_month_1,kW,Mean kW of this many completed months before forecast origin; monthly coverage at least 80%
+monthly,previous_month_2,kW,Mean kW of this many completed months before forecast origin; monthly coverage at least 80%
+monthly,previous_month_3,kW,Mean kW of this many completed months before forecast origin; monthly coverage at least 80%
+monthly,same_month_last_year,kW,Mean kW in target month one calendar year earlier; known before every supported forecast origin
+monthly,previous_3m_mean,kW,Average of available means for the three completed preceding months
+monthly,building_Academic,unitless,"Known meter/building indicator, supplied at forecast time"
+monthly,building_Facilities,unitless,"Known meter/building indicator, supplied at forecast time"
+monthly,building_Mess,unitless,"Known meter/building indicator, supplied at forecast time"

@@ -1,0 +1,21 @@
+{
+  "passed": true,
+  "worksheets": [
+    "Overview",
+    "Future monthly",
+    "Future hourly",
+    "Hourly predictions",
+    "Monthly predictions",
+    "Monthly trends",
+    "Seasonal errors",
+    "Validation",
+    "Example week",
+    "Data quality"
+  ],
+  "native_charts": 10,
+  "headline_formulas_match_python": true,
+  "local_timestamp_serials_verified": true,
+  "peak_and_error_formulas_present": true,
+  "formula_error_cells": 0,
+  "visual_review": "all ten sheets and six scientific figures reviewed"
+}

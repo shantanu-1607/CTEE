@@ -1,0 +1,35 @@
+{
+  "passed": true,
+  "tasks": [
+    {
+      "task": "hourly",
+      "passed": true,
+      "development_rows": 79045,
+      "test_rows": 25302,
+      "features": 20,
+      "future_rows": 72
+    },
+    {
+      "task": "monthly",
+      "passed": true,
+      "development_rows": 217,
+      "test_rows": 93,
+      "features": 11,
+      "future_rows": 9
+    }
+  ],
+  "checks": [
+    "future perturbation unit tests separately verify causal features",
+    "all label end times precede fit/validation origins",
+    "all selection scores precede 2017",
+    "imputers equal development-only medians",
+    "saved models reproduce frozen test predictions and errors",
+    "peak thresholds match development-only 90th percentiles",
+    "peak labels and confusion matrix reconcile",
+    "operational inference reproduces issued forecasts"
+  ],
+  "metrics_hashes": {
+    "hourly": "67e051e3627aeaead5a860c83910ecc8385e1cab7bdf3ab2d08c901687fbb1d0",
+    "monthly": "087e3a7f9d454ae5ded4ba5b313866c859965e8e04ac8d9c7eb764c036b8dba6"
+  }
+}

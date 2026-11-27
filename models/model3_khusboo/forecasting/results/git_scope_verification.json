@@ -1,0 +1,9 @@
+{
+  "passed": true,
+  "base_commit": "117a35f5d3098e5dc9278c9002896c406a41f315",
+  "all_existing_files_outside_model3_unchanged": true,
+  "historical_model3_artifacts_unchanged": true,
+  "allowed_modified_existing_file": "models/model3_khusboo/README.md",
+  "binary_files_checked": 21,
+  "binary_bytes_match_git_objects": true
+}

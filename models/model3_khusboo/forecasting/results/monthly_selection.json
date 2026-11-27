@@ -1,0 +1,20 @@
+{
+  "selected": "ridge",
+  "features": [
+    "month_sin",
+    "month_cos",
+    "horizon",
+    "previous_month_1",
+    "previous_month_2",
+    "previous_month_3",
+    "same_month_last_year",
+    "previous_3m_mean",
+    "building_Academic",
+    "building_Facilities",
+    "building_Mess"
+  ],
+  "validation_mean_macro_building_wape": 0.1291160146504401,
+  "fit_cutoff": "2017-01-01",
+  "development_rows": 217,
+  "test_rows": 93
+}
